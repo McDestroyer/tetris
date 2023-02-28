@@ -26,8 +26,9 @@ import os
 import time
 
 try:
-    import utilities.cursor as cursor
-    import utilities.win_vsc_color as color
+    from utilities import color
+    from utilities import cursor
+    from utilities import animations
     from utilities.personal_functions import *
 except ModuleNotFoundError:
     current = os.path.dirname(os.path.realpath(__file__))
@@ -36,8 +37,9 @@ except ModuleNotFoundError:
         current = os.path.dirname(current)
     sys.path.append(current)
 
-    import utilities.cursor as cursor
-    import utilities.win_vsc_color as color
+    from utilities import color
+    from utilities import cursor
+    from utilities import animations
     from utilities.personal_functions import *
 
 from tetris_functions import *
@@ -129,6 +131,15 @@ def play():
     """Run the game."""
     global loop
     start_time = time.monotonic_ns()
+
+
+    for b in blocks:
+        for i in range(4):
+            print_block(rotate(b, i))
+    input()
+
+
+
     # Check inputs
     # Move blocks
     # Check lines
@@ -148,7 +159,9 @@ def play():
 
 
 def initialize():
-    pass
+    """Set up the screen and variables."""
+    # Greet
+    # Build "screen"
 
 
 if __name__ == "__main__":
