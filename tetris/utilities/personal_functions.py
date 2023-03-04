@@ -25,11 +25,11 @@ import time
 # It adds the parent to the folders it searches in for dependencies.
 # It's nearly entirely unused when in a single folder, it was just irritating me in the editor.
 try:
-    import win_vsc_color as color
+    from utilities import color
 except ModuleNotFoundError:
     current = os.path.dirname(os.path.realpath(__file__))
     sys.path.append(current)
-    import win_vsc_color as color
+    from utilities import color
 
 
 # Gets rid of an annoying and irrelevant error message

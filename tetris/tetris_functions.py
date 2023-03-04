@@ -19,24 +19,24 @@ import sys
 import os
 
 try:
-    import utilities.cursor as cursor
-    import utilities.win_vsc_color as color
+    from utilities import color
+    from utilities import cursor
     from utilities.personal_functions import *
 except ModuleNotFoundError:
     current = os.path.dirname(os.path.realpath(__file__))
 
-    while current.split("\\")[-1] != "src":
+    while current.split("\\")[-1] != "tetris":
         current = os.path.dirname(current)
     sys.path.append(current)
 
-    import utilities.cursor as cursor
-    import utilities.win_vsc_color as color
+    from utilities import color
+    from utilities import cursor
     from utilities.personal_functions import *
 
 
 def print_block(block: list):
     """Temporary program to print out a block.
-    Could theoretically be used to print the screen, albeit inefficiently
+    Could theoretically be used to print the full screen, albeit inefficiently
 
     Args:
         block (list): The block to print.
@@ -59,10 +59,14 @@ def rotate(shape: list, rotations: int) -> list:
     Returns:
         list: The block rotated a given number of times.
     """
+    # Clones the shape and temporarily removes the metadata to allow for simpler rotation code.
     block = shape[:]
     shape_color = block[-1]
     block.remove(shape_color)
 
+    # A rotation algorithm created via. trial and error.
+    # I couldn't explain it if I tried, but it seems to work.
+    # Loops for the number of rotations specified.
     for _ in range(abs(rotations)):
         rotated = [
             [

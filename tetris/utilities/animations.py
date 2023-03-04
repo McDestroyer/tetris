@@ -21,15 +21,15 @@ from time import sleep
 # It adds the parent to the folders it searches in for dependencies.
 # It's nearly entirely unused when in a single folder, it was just irritating me in the editor.
 try:
-    import cursor
-    import win_vsc_color as color
-    from personal_functions import *
+    from utilities import color
+    from utilities import cursor
+    from utilities.personal_functions import *
 except ModuleNotFoundError:
     current = os.path.dirname(os.path.realpath(__file__))
     sys.path.append(current)
-    import cursor
-    import win_vsc_color as color
-    from personal_functions import *
+    from utilities import color
+    from utilities import cursor
+    from utilities.personal_functions import *
 
 
 # def loading1(time: int = 5, message: str = "Loading:", container: str = "[ ]", length: int = 50,
