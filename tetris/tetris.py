@@ -178,7 +178,9 @@ def play():
 def initialize():
     """Set up the screen and variables."""
     animations.loading_v3()
-    audio.play_background("tetris/assets/music/Tetris.mp3", -1)
+
+    file_location = os.path.dirname(os.path.realpath(__file__))
+    audio.play_background(file_location + "/assets/music/Tetris.mp3", -1)
     # Build "screen" frame
 
 
