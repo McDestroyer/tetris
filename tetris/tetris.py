@@ -31,6 +31,7 @@ try:
     from utilities import color
     from utilities import cursor
     from utilities import animations
+    from utilities import audio
     from utilities import keyboard_input
     from utilities.personal_functions import *
 except ModuleNotFoundError:
@@ -43,6 +44,7 @@ except ModuleNotFoundError:
     from utilities import color
     from utilities import cursor
     from utilities import animations
+    from utilities import audio
     from utilities import keyboard_input
     from utilities.personal_functions import *
 
@@ -176,6 +178,9 @@ def play():
 def initialize():
     """Set up the screen and variables."""
     animations.loading_v3()
+
+    file_location = os.path.dirname(os.path.realpath(__file__))
+    audio.play_background(file_location + "/assets/music/Tetris.mp3", -1)
     # Build "screen" frame
 
 
@@ -183,9 +188,11 @@ def listener() -> list:
     """Find out which commands need to be run. Could be later modified to run these commands.
 
     Returns:
-        list: The lsit of commands to be followed.
+        list: The list of commands to be followed.
     """
     commands = []
+
+    # Designed so if opposing commands are included, they will cancel out.
     if keyboard_input.is_newly_pressed("a"):
         commands.append("left")
     if keyboard_input.is_newly_pressed("d"):
