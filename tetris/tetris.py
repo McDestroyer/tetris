@@ -189,7 +189,7 @@ def listener() -> list:
         list: The list of commands to be followed.
     """
     commands = []
-    
+
     # Designed so if opposing commands are included, they will cancel out.
     if keyboard_input.is_newly_pressed("a"):
         commands.append("left")
