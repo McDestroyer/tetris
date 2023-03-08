@@ -23,12 +23,14 @@ from time import sleep
 try:
     import cursor
     import color
+    import keyboard_input as keybd
     from personal_functions import *
 except ModuleNotFoundError:
     current = os.path.dirname(os.path.realpath(__file__))
     sys.path.append(current)
     import cursor
     import color
+    import keyboard_input as keybd
     from personal_functions import *
 
 
@@ -140,6 +142,11 @@ def loading_v3(loading_time: int = 5, message: str = "Loading:",
     for i in range(length):
         sleep(delta)
 
+        if keybd.is_currently_pressed("esc"):
+            cursor.cursor_down()
+            cursor.beginning()
+            break
+
         if percent:
             cursor.cursor_right(len(message) + 1)
 
@@ -185,8 +192,14 @@ def drop_down(image: list, colors: dict, drop_time: int = 5,
     for i in range(bottom_y):
         cursor.set_pos(0, 0)
         cursor.clear_screen()
-        #for j, _ in enumerate(image[]):
+
+        if keybd.is_currently_pressed("esc"):
+            cursor.cursor_down()
+            cursor.beginning()
+            break
+
         for j in range(i, 0, -1):
+
             if j <= len(image):
                 cursor.clear_line()
                 line = image[-j]

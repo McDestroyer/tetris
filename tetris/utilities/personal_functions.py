@@ -26,10 +26,12 @@ import time
 # It's nearly entirely unused when in a single folder, it was just irritating me in the editor.
 try:
     import color
+    import keyboard_input as keybd
 except ModuleNotFoundError:
     current = os.path.dirname(os.path.realpath(__file__))
     sys.path.append(current)
     import color
+    import keyboard_input as keybd
 
 
 # Gets rid of an annoying and irrelevant error message
@@ -81,18 +83,25 @@ def text(*message: object, letter_time: float = .025, line_delay: float = 0,
         if isinstance(message[0], (tuple, list)):
             message = message[0]
 
+    # The speed multiplier. Added fow using esc to speed up outputs.
+    speed = 1
+
     # Cycles through and prints each letter with delay.
     for j, i in enumerate(message):
+
+        if keybd.is_currently_pressed("esc"):
+            speed = 0
+
         if not j == 0:
             for letter in sep:
                 print(letter, end='', flush=flush)
-                sleep(letter_time)
+                sleep(letter_time * speed)
         for letter in str(i):
             print(letter, end='', flush=flush)
-            sleep(letter_time)
+            sleep(letter_time * speed)
 
     # Cleans up and optionally waits at the end.
-    sleep(line_delay)
+    sleep(line_delay * speed)
     if not mods == []:
         print(color.END, end="")
     print(end=end)
