@@ -21,15 +21,15 @@ from time import sleep
 # It adds the parent to the folders it searches in for dependencies.
 # It's nearly entirely unused when in a single folder, it was just irritating me in the editor.
 try:
-    from utilities import color
-    from utilities import cursor
-    from utilities.personal_functions import *
+    import cursor
+    import color
+    from personal_functions import *
 except ModuleNotFoundError:
     current = os.path.dirname(os.path.realpath(__file__))
     sys.path.append(current)
-    from utilities import color
-    from utilities import cursor
-    from utilities.personal_functions import *
+    import cursor
+    import color
+    from personal_functions import *
 
 
 # def loading1(time: int = 5, message: str = "Loading:", container: str = "[ ]", length: int = 50,
@@ -76,10 +76,11 @@ except ModuleNotFoundError:
 #     cursor.show()
 
 
-def loading_v3(time: int = 5, message: str = "Loading:", container: str = "[ ]", length: int = 50,
-             message_mods: list | None = None, bar_mods: list | None = None,
-             percent_mods: list | None = None, container_mods: list | None = None,
-             empty_symbol: str = "-", loaded_symbol: str = "#", percent: bool = True):
+def loading_v3(loading_time: int = 5, message: str = "Loading:",
+               container: str = "[ ]", length: int = 50,
+               message_mods: list | None = None, bar_mods: list | None = None,
+               percent_mods: list | None = None, container_mods: list | None = None,
+               empty_symbol: str = "-", loaded_symbol: str = "#", percent: bool = True):
     """Generate a loading bar that counts up dynamically with an optional percentage.
 
     Args:
@@ -124,7 +125,7 @@ def loading_v3(time: int = 5, message: str = "Loading:", container: str = "[ ]",
     else:
         start = len(message + beginning) + 2
     ending = container.split()[1]
-    delta = time / length
+    delta = loading_time / length
 
     text(message, mods=message_mods, end=" ")
     if percent:
@@ -158,30 +159,74 @@ def loading_v3(time: int = 5, message: str = "Loading:", container: str = "[ ]",
     cursor.show()
 
 
-if __name__ == "__main__":
+def drop_down(image: list, colors: dict, drop_time: int = 5,
+              bottom_y: int = 20, symbol: str | None = None) -> None:
+    """Drop down a text-art image from the top of the screen.
+
+    Args:
+        image (list):
+            The list of lines of text to print.
+        colors (dict):
+            The dictionary of the colors to make each of the symbols in the image.
+        time (int, optional):
+            The time to spend on the animation.
+            Defaults to 5.
+        bottom_y (int, optional):
+            The distance from the top of the screen at which the image stops dropping.
+            Defaults to 20.
+        symbol (str | None, optional):
+            The symbol to translate all non-blank symbols to.
+            Defaults to None.
+    """
+    cursor.hide()
     cursor.clear_screen()
-    loading_v3(length=100,message_mods=[color.GREEN], container_mods=[color.RED],
-            bar_mods=[color.BLUE], percent_mods=[color.YELLOW], percent=True)
+    colors[" "] = color.DEFAULT_COLOR
+
+    for i in range(bottom_y):
+        cursor.set_pos(0, 0)
+        cursor.clear_screen()
+        #for j, _ in enumerate(image[]):
+        for j in range(i, 0, -1):
+            if j <= len(image):
+                cursor.clear_line()
+                line = image[-j]
+
+                for piece in line:
+
+                    if piece == " ":
+                        text(piece, end="", letter_time=0)
+                    else:
+                        if symbol is None:
+                            text(piece, mods=[colors[piece]], end="", letter_time=0, flush=False)
+                        else:
+                            text(symbol, mods=[colors[piece]], end="", letter_time=0, flush=False)
+                cursor.cursor_down()
+                cursor.beginning()
+            else:
+                if j == len(image) + 1:
+                    cursor.clear_line()
+                cursor.cursor_down()
+
+        sleep(drop_time / bottom_y)
+    cursor.show()
 
 
-# Tetris
+if __name__ == "__main__":
+    logo = [
+        "##########  --------  __________  ======    ......    //////  ",
+        "    ##      --            __      ==    ==    ..    //        ",
+        "    ##      ----          __      ======      ..      //////  ",
+        "    ##      --            __      ==  ==      ..            //",
+        "    ##      --------      __      ==    ==  ......    //////  "
+    ]
 
-# []
-# []
-# []
-# []
+    symbol_colors = {
+        "#": color.GREEN,
+        "-": color.RED,
+        "_": color.ERROR,
+        "=": color.BLUE,
+        ".": color.YELLOW,
+        "/": color.CYAN
+    }
 
-# [][]
-#   [][]
-
-#   [][]
-# [][]
-
-#   []
-# [][][]
-
-# [][][]
-#     []
-
-#     []
-# [][][]
+    drop_down(logo, symbol_colors, 5, 20, "█")

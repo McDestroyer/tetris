@@ -134,9 +134,6 @@ current_positions = [
 
 def _main() -> None:
     """Main"""
-    text("Welcome to our Tetris recreation!\n", mods=[color.UNDERLINE, color.GREET])
-    intext("Press Enter to start the game...", mods=[color.CYAN])
-
     initialize()
 
     while not dead:
@@ -177,7 +174,33 @@ def play():
 
 def initialize():
     """Set up the screen and variables."""
-    animations.loading_v3()
+
+    text("Welcome to our Tetris recreation!\n", mods=[color.UNDERLINE, color.GREET])
+    intext("Please make the terminal as large as possible to ensure the best possible experience," +
+           " then press Enter to start the game...", mods=[color.CYAN])
+
+    logo = [
+        "##########  --------  __________  ======    ......    //////  ",
+        "    ##      --            __      ==    ==    ..    //        ",
+        "    ##      ----          __      ======      ..      //////  ",
+        "    ##      --            __      ==  ==      ..            //",
+        "    ##      --------      __      ==    ==  ......    //////  "
+    ]
+
+    symbol_colors = {
+        "#": color.GREEN,
+        "-": color.RED,
+        "_": color.ERROR,
+        "=": color.BLUE,
+        ".": color.YELLOW,
+        "/": color.CYAN
+    }
+
+    animations.drop_down(logo, symbol_colors, 5, 20, "█")
+    sleep(2)
+    cursor.cursor_down()
+    animations.loading_v3(length=100,message_mods=[color.GREEN], container_mods=[color.RED],
+                          bar_mods=[color.BLUE], percent_mods=[color.YELLOW], percent=True)
 
     file_location = os.path.dirname(os.path.realpath(__file__))
     audio.play_background(file_location + "/assets/music/Tetris.mp3", -1)
@@ -241,10 +264,13 @@ if __name__ == "__main__":
     try:
         # Clears the screen to allow for a cleaner experience before running the program.
         cursor.clear_screen()
+        cursor.set_pos()
 
         _main()
     # :P
     except KeyboardInterrupt:
+        audio.stop_music()
+
         # The 2nd try/except clears all formatting without wasting time
         # so you don't have to wait for it to scroll out.
         try:
