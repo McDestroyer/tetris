@@ -21,6 +21,12 @@ from time import sleep
 import time
 
 
+# Gets rid of an annoying and irrelevant error message
+
+# pylint: disable=no-member
+# pylint: disable=ungrouped-imports
+
+
 # Needed for some reason when called from outside this folder ¯\_(ツ)_/¯
 # It adds the parent to the folders it searches in for dependencies.
 # It's nearly entirely unused when in a single folder, it was just irritating me in the editor.
@@ -32,11 +38,6 @@ except ModuleNotFoundError:
     sys.path.append(current)
     import color
     import keyboard_input as keybd
-
-
-# Gets rid of an annoying and irrelevant error message
-
-# pylint: disable=no-member
 
 
 # Input / Output
