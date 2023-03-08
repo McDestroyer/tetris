@@ -2,7 +2,7 @@
 
 Things to do (not necessarily in order):
 
-	Music -- Jason (I already have the music file)
+	Music -- Jason (Done!)
 	Block downward movement
 	Movement controls
 	Rotation controls
