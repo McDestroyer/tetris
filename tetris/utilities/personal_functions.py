@@ -25,11 +25,11 @@ import time
 # It adds the parent to the folders it searches in for dependencies.
 # It's nearly entirely unused when in a single folder, it was just irritating me in the editor.
 try:
-    from utilities import color
+    import color
 except ModuleNotFoundError:
     current = os.path.dirname(os.path.realpath(__file__))
     sys.path.append(current)
-    from utilities import color
+    import color
 
 
 # Gets rid of an annoying and irrelevant error message
@@ -41,7 +41,7 @@ except ModuleNotFoundError:
 
 
 def text(*message: object, letter_time: float = .025, line_delay: float = 0,
-         sep: str = " ", end: str = "\n", mods: list = None) -> None:
+         sep: str = " ", end: str = "\n", mods: list = None, flush: bool = True) -> None:
     """Mimic print() but with more functionality and a default time delay.
 
     Args:
@@ -63,6 +63,9 @@ def text(*message: object, letter_time: float = .025, line_delay: float = 0,
         mods (list, optional):
             List of modifiers from the colorizer class to apply to the message.
             Defaults to [].
+        flush (bool, optional):
+            Determines if the text is output immediately or not.
+            Defaults to True.
     """
     # Having a function have a default list is "dangerous" so this serves as an equivalent if None.
     # Otherwise, prints the markup escape codes.
@@ -82,10 +85,10 @@ def text(*message: object, letter_time: float = .025, line_delay: float = 0,
     for j, i in enumerate(message):
         if not j == 0:
             for letter in sep:
-                print(letter, end='', flush=True)
+                print(letter, end='', flush=flush)
                 sleep(letter_time)
         for letter in str(i):
-            print(letter, end='', flush=True)
+            print(letter, end='', flush=flush)
             sleep(letter_time)
 
     # Cleans up and optionally waits at the end.
