@@ -41,6 +41,8 @@ def play_background(file: str, loops: int = 1, start: float = 0, fade_ms: int = 
             The fade time, I assume (untested).
             Defaults to 1.
     """
+    stop_music()
+
     pygame.mixer.music.load(file, file)
 
     pygame.mixer.music.play(loops, start, fade_ms)

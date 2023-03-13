@@ -1,6 +1,7 @@
 """Class"""
 
-class tetromino:
+class Tetromino:
+    """The tetrominoes falling, held, or in future."""
 
     def __init__(self, shape: list, pos: list, status: int = 3):
         """Initiate the tetromino class by adding various stats.
@@ -16,10 +17,11 @@ class tetromino:
         """
         self.color = shape[-1]
         self.position = pos
-        self.x = pos[0]
-        self.y = pos[1]
+        self.pos_x = pos[0]
+        self.pos_y = pos[1]
         self.size = len(shape[0])
         self.status = status
+        self.was_held = False
 
 
     def move(self, direction: str = "down", distance: int = 1) -> tuple:
@@ -41,3 +43,13 @@ class tetromino:
         """
 
         # Insert code here
+        # TODO Zeph here
+    
+
+    def change_status(self, status: int = 0) -> None:
+        """Change the status and therefore also position of the tetromino.
+
+        Args:
+            status (int):
+                The status to change the tetromino to.
+        """
