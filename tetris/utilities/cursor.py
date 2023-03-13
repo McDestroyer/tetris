@@ -146,16 +146,16 @@ def load():
 
 # Set cursor position
 
-def set_pos(line: int = 0, column: int = 0):
+def set_pos(column: int = 0, line: int = 0):
     """Set the position of the cursor to specific coordinates.
 
     Args:
-        line (int, optional):
-            The line or y-axis to set the position of the cursor to.
-            Defaults to 0. (The top of the screen)
         column (int, optional): 
             The column or x-axis to set the position of the cursor to.
             Defaults to 0. (The left side of the screen)
+        line (int, optional):
+            The line or y-axis to set the position of the cursor to.
+            Defaults to 0. (The top of the screen)
     """
     print(f"\033[{line};{column}H", end="")
 
