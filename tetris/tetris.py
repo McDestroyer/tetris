@@ -51,13 +51,17 @@ except ModuleNotFoundError:
 from tetris_functions import *
 
 # Formatting settings (screen size and offset from the left side of the screen so far)
-grid = (10, 24)
-LEFT_OFFSET = 5
+GRID = (10, 24)
+FORCAST_PIECES = 3 # Number of future pieces to show on the right.
+FRAME_TOP_MATERIAL = "-"
+FRAME_SIDE_MATERIAL = "|"
+X_Y_OFFSET = (len(FRAME_SIDE_MATERIAL) * 2 + 8 + 3, 1) # (2 for each block [4], frames, and spaces)
 
 # Scores, levels, and life. Only life is implemented as of yet.
 score = 0
 high_scores = ["Name", "Score"]
 level = 1
+lines = 0
 dead = False
 
 # The delta time (how long each frame should take)
@@ -124,11 +128,11 @@ blocks = [
 
 # This is the screen grid of squares and their colors
 # The outer list is the list of horizontal lines. The inner list is the relevant column entries.
-# Example: [0][0] is the bottom left, [4][3] is the 5th item up and the 4th item across.
+# Example: [0][0] is the top left, [4][3] is the 5th item down and the 4th item across.
 current_positions = [
         [
-            ["  ", color.DEFAULT_COLOR] for _ in range(grid[0])
-        ] for _ in range(grid[1])
+            ["██", color.BLACK] for _ in range(GRID[0])
+        ] for _ in range(GRID[1])
     ]
 
 
@@ -146,13 +150,13 @@ def play():
 
     # Prints all blocks in all rotations as a test. It works.
     # Left it as a visual representation of action occuring.
-    for b in blocks:
-        for i in range(4):
-            print_block(rotate(b, i))
+    # for b in blocks:
+    #     for i in range(4):
+    #         print_block(rotate(b, i))
 
     # Gets keyboard commands and sends the summary of the actions requested to a list.
-    commands = listener()
-    print(commands)
+    # commands = listener()
+    # print(commands)
 
 
     # To be added:
@@ -175,6 +179,19 @@ def play():
 def initialize():
     """Set up the screen and variables."""
 
+    loading_screen()
+
+    cursor.hide()
+
+    # Music
+    file_location = os.path.dirname(os.path.realpath(__file__))
+    audio.play_background(file_location + "/assets/music/Tetris.mp3", -1)
+
+    generate_frame()
+
+
+def loading_screen():
+    """Run loading animations."""
     text("Welcome to our Tetris recreation!\n", mods=[color.UNDERLINE, color.GREET])
     intext("Please make the terminal as large as possible to ensure the best possible experience," +
            " then press Enter to start the game...", mods=[color.CYAN])
@@ -202,9 +219,200 @@ def initialize():
     animations.loading_v3(length=100,message_mods=[color.GREEN], container_mods=[color.RED],
                           bar_mods=[color.BLUE], percent_mods=[color.YELLOW], percent=True)
 
-    file_location = os.path.dirname(os.path.realpath(__file__))
-    audio.play_background(file_location + "/assets/music/Tetris.mp3", -1)
+
+def generate_frame():
+    """Draw the gameplay screen."""
+
+
+    # Main
+
+
     # Build "screen" frame
+    cursor.clear_screen()
+    cursor.set_pos()
+
+    # Top of frame
+    cursor.cursor_down(X_Y_OFFSET[1] - 1)
+    cursor.cursor_right(X_Y_OFFSET[0] - (len(FRAME_SIDE_MATERIAL) + 1))
+
+    text(FRAME_TOP_MATERIAL * (GRID[0] * 2 + (len(FRAME_SIDE_MATERIAL) + 1) * 2),
+         letter_time=0, flush=False)
+
+    # Walls of frame and grid
+    for i in range(GRID[1]):
+        cursor.cursor_right(X_Y_OFFSET[0] - (len(FRAME_SIDE_MATERIAL) + 1))
+        text(FRAME_SIDE_MATERIAL, end=" ", letter_time=0, flush=False)
+
+        for j in range(GRID[0]):
+            text(current_positions[i][j][0], end="", letter_time=0,
+                 flush=False, mods=[current_positions[i][j][1]])
+
+        text(" " + FRAME_SIDE_MATERIAL, letter_time=0, flush=False)
+
+    # Bottom of frame
+    cursor.cursor_right(X_Y_OFFSET[0] - (len(FRAME_SIDE_MATERIAL) + 1))
+    text(FRAME_TOP_MATERIAL * (GRID[0] * 2 + (len(FRAME_SIDE_MATERIAL) + 1) * 2),
+         letter_time=0, flush=False)
+
+
+    # Hold
+
+
+    cursor.set_pos()
+    cursor.cursor_down(X_Y_OFFSET[1] - 1)
+
+    text(FRAME_TOP_MATERIAL * rounder((((X_Y_OFFSET[0] - (len(FRAME_SIDE_MATERIAL) + 1))- 4) / 2)),
+         letter_time=0, flush=False, end="")
+
+    text("HOLD", letter_time=0, flush=False, end="")
+
+    text(FRAME_TOP_MATERIAL * (rounder((((X_Y_OFFSET[0] -
+         (len(FRAME_SIDE_MATERIAL) + 1))- 4) / 2)) - 1),
+         letter_time=0, flush=True, end="")
+
+    # Walls of hold and empty contents
+    for i in range(4):
+
+        cursor.cursor_down()
+        cursor.beginning()
+
+        text(FRAME_SIDE_MATERIAL, end=" ", letter_time=0, flush=False)
+
+        text("██" * 4, end="", letter_time=0, flush=False, mods=[color.BLACK])
+
+    cursor.cursor_down()
+    cursor.beginning()
+
+    text(FRAME_TOP_MATERIAL * (X_Y_OFFSET[0] - (len(FRAME_SIDE_MATERIAL) + 1)),
+         letter_time=0, flush=False, end="")
+
+
+    # Next up
+
+
+    for i in range(FORCAST_PIECES):
+        cursor.set_pos()
+
+        if i == 0:
+            # cursor.cursor_down(X_Y_OFFSET[1] - 1)
+            y = X_Y_OFFSET[1]
+        else:
+            # cursor.cursor_down(X_Y_OFFSET[1] + (5 * i))
+            y = X_Y_OFFSET[1] + (5 * i)
+
+        # cursor.cursor_right(X_Y_OFFSET[0] + GRID[0] * 2 + len(FRAME_SIDE_MATERIAL) + 1)
+        x = X_Y_OFFSET[0] + GRID[0] * 2 + len(FRAME_SIDE_MATERIAL) + 1
+
+        cursor.set_pos(x + 1, y + 1)
+
+        if i == 0:
+
+            text(FRAME_TOP_MATERIAL * (2 + 1), letter_time=0, flush=False, end="")
+
+            text("NEXT", letter_time=0, flush=False, end="")
+
+            text(FRAME_TOP_MATERIAL * (2 + 1 + len(FRAME_SIDE_MATERIAL)),
+                letter_time=0, flush=False, end="")
+
+        else:
+
+            text(FRAME_TOP_MATERIAL * (8 + 2 + len(FRAME_SIDE_MATERIAL)),
+                letter_time=0, flush=False, end="")
+
+        for _ in range(4):
+
+            cursor.cursor_down()
+            cursor.beginning()
+            cursor.cursor_right(X_Y_OFFSET[0] + GRID[0] * 2 + len(FRAME_SIDE_MATERIAL) + 1)
+
+            text(" " + "██" * 4, end="", letter_time=0, flush=False, mods=[color.BLACK])
+            text(f" {FRAME_SIDE_MATERIAL}", end="", letter_time=0, flush=False)
+
+        # End cap the forcast
+
+        if i + 1 == FORCAST_PIECES:
+
+            cursor.cursor_down()
+            cursor.beginning()
+            cursor.cursor_right(X_Y_OFFSET[0] + GRID[0] * 2 + len(FRAME_SIDE_MATERIAL) + 1)
+
+            text(FRAME_TOP_MATERIAL * (8 + 2 + len(FRAME_SIDE_MATERIAL)),
+                letter_time=0, flush=False, end="")
+
+
+    # Stats
+
+
+    # Score
+
+    y = X_Y_OFFSET[1] + 5
+    cursor.set_pos(0, y + 1)
+    val_len = len(str(score))
+
+    text(FRAME_TOP_MATERIAL * int(5 + len(FRAME_TOP_MATERIAL) - 3),
+         letter_time=0, flush=False, end="")
+    text("SCORE", letter_time=0, flush=False, end="")
+    text(FRAME_TOP_MATERIAL * int(5 + len(FRAME_TOP_MATERIAL) - 3),
+         letter_time=0, flush=False, end="")
+
+    cursor.cursor_down()
+    cursor.beginning()
+
+    text(FRAME_SIDE_MATERIAL, letter_time=0, flush=False, end=" ")
+
+    text(" " * int(4 - val_len / 2), letter_time=0, flush=False, end="")
+    text(score, letter_time=0, flush=False, end="")
+
+    # Level
+
+    cursor.cursor_down()
+    cursor.beginning()
+
+    text(FRAME_TOP_MATERIAL * int(5 + len(FRAME_TOP_MATERIAL) - 3),
+         letter_time=0, flush=False, end="")
+    text("LEVEL", letter_time=0, flush=False, end="")
+    text(FRAME_TOP_MATERIAL * int(5 + len(FRAME_TOP_MATERIAL) - 3),
+         letter_time=0, flush=False, end="")
+
+    cursor.cursor_down()
+    cursor.beginning()
+
+    val_len = len(str(level))
+
+    text(FRAME_SIDE_MATERIAL, letter_time=0, flush=False, end=" ")
+
+    text(" " * int(4 - val_len / 2), letter_time=0, flush=False, end="")
+    text(level, letter_time=0, flush=False, end="")
+
+    # Lines
+
+    cursor.cursor_down()
+    cursor.beginning()
+
+    text(FRAME_TOP_MATERIAL * int(5 + len(FRAME_TOP_MATERIAL) - 3),
+         letter_time=0, flush=False, end="")
+    text("LINES", letter_time=0, flush=False, end="")
+    text(FRAME_TOP_MATERIAL * int(5 + len(FRAME_TOP_MATERIAL) - 3),
+         letter_time=0, flush=False, end="")
+
+    cursor.cursor_down()
+    cursor.beginning()
+
+    val_len = len(str(lines))
+
+    text(FRAME_SIDE_MATERIAL, letter_time=0, flush=False, end=" ")
+
+    text(" " * int(4 - val_len / 2), letter_time=0, flush=False, end="")
+    text(lines, letter_time=0, flush=False, end="")
+
+    # Wrap it up
+
+    cursor.cursor_down()
+    cursor.beginning()
+
+    text(FRAME_TOP_MATERIAL * (X_Y_OFFSET[0] - (len(FRAME_SIDE_MATERIAL) + 1)),
+         letter_time=0, flush=True, end="")
+
 
 
 def listener() -> list:
