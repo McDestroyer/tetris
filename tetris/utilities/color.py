@@ -10,6 +10,9 @@ try:
     pkg_resources.require("colorama")
 except pkg_resources.DistributionNotFound:
     os.system('pip install colorama --quiet')
+    os.system('python -m pip install colorama --quiet')
+    os.system('python3 -m pip install colorama --quiet')
+    os.system('py -m pip install colorama --quiet')
 
 import colorama
 colorama.init()
