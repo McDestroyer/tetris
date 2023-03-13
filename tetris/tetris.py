@@ -77,8 +77,8 @@ loop = 0
 g_loop = rounder(g_time * (1 / delta_seconds))
 
 # The symbols used to represent a filled or empty square
-BS = "██"
-bl = "  "
+BS = "##"
+bl = ""
 
 # The list of tetrominoes. The grids are shaped so they rotate correctly around the center.
 blocks = [
