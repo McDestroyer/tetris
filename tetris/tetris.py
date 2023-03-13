@@ -229,12 +229,13 @@ def generate_frame():
 
     # Build "screen" frame
     cursor.clear_screen()
-    cursor.set_pos()
+
+    x = X_Y_OFFSET[0] - (len(FRAME_SIDE_MATERIAL) + 1)
+    y = X_Y_OFFSET[1] - 1
+
+    cursor.set_pos(x + 1, y + 1)
 
     # Top of frame
-    cursor.cursor_down(X_Y_OFFSET[1] - 1)
-    cursor.cursor_right(X_Y_OFFSET[0] - (len(FRAME_SIDE_MATERIAL) + 1))
-
     text(FRAME_TOP_MATERIAL * (GRID[0] * 2 + (len(FRAME_SIDE_MATERIAL) + 1) * 2),
          letter_time=0, flush=False)
 
@@ -291,16 +292,9 @@ def generate_frame():
 
 
     for i in range(FORCAST_PIECES):
-        cursor.set_pos()
 
-        if i == 0:
-            # cursor.cursor_down(X_Y_OFFSET[1] - 1)
-            y = X_Y_OFFSET[1]
-        else:
-            # cursor.cursor_down(X_Y_OFFSET[1] + (5 * i))
-            y = X_Y_OFFSET[1] + (5 * i)
+        y = X_Y_OFFSET[1] + (5 * i)
 
-        # cursor.cursor_right(X_Y_OFFSET[0] + GRID[0] * 2 + len(FRAME_SIDE_MATERIAL) + 1)
         x = X_Y_OFFSET[0] + GRID[0] * 2 + len(FRAME_SIDE_MATERIAL) + 1
 
         cursor.set_pos(x + 1, y + 1)
