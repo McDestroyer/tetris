@@ -7,10 +7,14 @@ import os
 import pkg_resources
 
 # Checks to see if the dependency is installed. If not, installs it.
+DEPENDENCY = "keyboard"
 try:
-    pkg_resources.require("keyboard")
+    pkg_resources.require(DEPENDENCY)
 except pkg_resources.DistributionNotFound:
-    os.system('pip install keyboard --quiet')
+    os.system(f'pip install {DEPENDENCY} --quiet')
+    os.system(f'python -m pip install {DEPENDENCY} --quiet')
+    os.system(f'python3 -m pip install {DEPENDENCY} --quiet')
+    os.system(f'py -m pip install {DEPENDENCY} --quiet')
 
 import keyboard
 
