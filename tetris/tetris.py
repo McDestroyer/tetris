@@ -51,8 +51,11 @@ except ModuleNotFoundError:
 from tetris_functions import *
 
 # Formatting settings (screen size and offset from the left side of the screen so far)
-grid = (10, 24)
-LEFT_OFFSET = 5
+GRID = (10, 24)
+X_Y_OFFSET = (10, 1) # (2 for each block [4] and includes frames)
+FORCAST_PIECES = 1 # Number of future pieces to show on the right.
+FRAME_TOP_MATERIAL = "-"
+FRAME_SIDE_MATERIAL = "#"
 
 # Scores, levels, and life. Only life is implemented as of yet.
 score = 0
@@ -124,11 +127,11 @@ blocks = [
 
 # This is the screen grid of squares and their colors
 # The outer list is the list of horizontal lines. The inner list is the relevant column entries.
-# Example: [0][0] is the bottom left, [4][3] is the 5th item up and the 4th item across.
+# Example: [0][0] is the top left, [4][3] is the 5th item down and the 4th item across.
 current_positions = [
         [
-            ["  ", color.DEFAULT_COLOR] for _ in range(grid[0])
-        ] for _ in range(grid[1])
+            ["██", color.BLACK] for _ in range(GRID[0])
+        ] for _ in range(GRID[1])
     ]
 
 
@@ -146,13 +149,13 @@ def play():
 
     # Prints all blocks in all rotations as a test. It works.
     # Left it as a visual representation of action occuring.
-    for b in blocks:
-        for i in range(4):
-            print_block(rotate(b, i))
+    # for b in blocks:
+    #     for i in range(4):
+    #         print_block(rotate(b, i))
 
     # Gets keyboard commands and sends the summary of the actions requested to a list.
-    commands = listener()
-    print(commands)
+    # commands = listener()
+    # print(commands)
 
 
     # To be added:
@@ -175,6 +178,35 @@ def play():
 def initialize():
     """Set up the screen and variables."""
 
+    load()
+
+    # Music
+    file_location = os.path.dirname(os.path.realpath(__file__))
+    audio.play_background(file_location + "/assets/music/Tetris.mp3", -1)
+
+    # Build "screen" frame
+    cursor.clear_screen()
+    cursor.set_pos()
+
+    cursor.cursor_down(X_Y_OFFSET[1])
+    cursor.cursor_right(X_Y_OFFSET[0])
+
+    text(FRAME_TOP_MATERIAL * (GRID[0] + 2), letter_time=0, flush=False)
+    for i in range(GRID[1]):
+        cursor.cursor_right(X_Y_OFFSET[0])
+        text(FRAME_SIDE_MATERIAL, end="", letter_time=0, flush=False)
+        for j in range(GRID[1]):
+            text(current_positions[i][j][0], end="", letter_time=0, flush=False, mods=[current_positions[i][j][1]])
+        text(FRAME_SIDE_MATERIAL, letter_time=0, flush=False)
+    text(FRAME_TOP_MATERIAL * (GRID[0] + 2), letter_time=0, flush=False)
+
+
+    cursor.cursor_right(X_Y_OFFSET[0])
+    text(FRAME_TOP_MATERIAL * (GRID[0] + 2), letter_time=0, flush=False)
+
+
+def load():
+    """Run loading animations."""
     text("Welcome to our Tetris recreation!\n", mods=[color.UNDERLINE, color.GREET])
     intext("Please make the terminal as large as possible to ensure the best possible experience," +
            " then press Enter to start the game...", mods=[color.CYAN])
@@ -201,10 +233,6 @@ def initialize():
     cursor.cursor_down()
     animations.loading_v3(length=100,message_mods=[color.GREEN], container_mods=[color.RED],
                           bar_mods=[color.BLUE], percent_mods=[color.YELLOW], percent=True)
-
-    file_location = os.path.dirname(os.path.realpath(__file__))
-    audio.play_background(file_location + "/assets/music/Tetris.mp3", -1)
-    # Build "screen" frame
 
 
 def listener() -> list:
