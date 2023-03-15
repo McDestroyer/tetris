@@ -1,5 +1,7 @@
 """Class"""
 
+from utilities import color
+
 class Tetromino:
     """The tetrominoes falling, held, or in future."""
 
@@ -47,6 +49,18 @@ class Tetromino:
 
         # Insert code here
         # TODO Zeph here
+
+        # Suggestion:
+
+        # Step 1. Check to see if you can move:
+        if direction == "down":
+            for i, row in enumerate(grid):
+                for j, square in enumerate(row):
+                    if square[0] == "##":
+                        if grid[i+1][j][0] == "##" or grid[i+1][j][1] == color.BLACK:
+                            pass
+                        else:
+                            return False
 
 
     def move_to(self, grid: list, position: tuple) -> bool:
