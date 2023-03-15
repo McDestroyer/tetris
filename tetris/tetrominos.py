@@ -27,7 +27,7 @@ class Tetromino:
         self.was_held = False
 
 
-    def move(self, grid: list, direction: str = "down", distance: int = 1) -> tuple:
+    def move(self, grid: list, direction: str = "down", infinite_move: bool = False) -> tuple:
         """Move a tetromino in a given direction a given distance.
 
         Args:
@@ -37,9 +37,10 @@ class Tetromino:
                 The direction to move.
                 Options: "left", "right", "down"
                 Defaults to "down".
-            distance (int, optional):
-                The distance to move. -1 = as far as possible.
-                Defaults to 1.
+            infinite_move (bool, optional):
+                The determines whether or not the block continues to
+                move until it can't or if it just moves 1 space.
+                Defaults to False.
 
         Returns:
             bool:
@@ -52,15 +53,23 @@ class Tetromino:
 
         # Suggestion:
 
-        # Step 1. Check to see if you can move:
-        if direction == "down":
-            for i, row in enumerate(grid):
-                for j, square in enumerate(row):
-                    if square[0] == "##":
-                        if grid[i+1][j][0] == "##" or grid[i+1][j][1] == color.BLACK:
-                            pass
-                        else:
-                            return False
+        while True:
+
+            # Step 1. Check to see if you can move:
+            if direction == "down":
+                for i, row in enumerate(grid):
+                    for j, square in enumerate(row):
+                        if square[0] == "##":
+                            if grid[i+1][j][0] == "##" or grid[i+1][j][1] == color.BLACK:
+                                pass
+                            else:
+                                return False
+ 
+            # Move
+
+            # Break if only moving once.
+            if not infinite_move:
+                break
 
 
     def move_to(self, grid: list, position: tuple) -> bool:
