@@ -64,7 +64,7 @@ class Tetromino:
                                 pass
                             else:
                                 return False
- 
+
             # Move
 
             # Break if only moving once.
