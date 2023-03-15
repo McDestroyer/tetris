@@ -216,8 +216,9 @@ def loading_screen():
     animations.drop_down(logo, symbol_colors, 5, 20, "█")
     sleep(2)
     cursor.cursor_down()
-    animations.loading_v3(length=100,message_mods=[color.GREEN], container_mods=[color.RED],
-                          bar_mods=[color.BLUE], percent_mods=[color.YELLOW], percent=True)
+    animations.loading_v3(loading_time=7.5, length=50, message_mods=[color.GREEN],
+                          container_mods=[color.RED], bar_mods=[color.BLUE],
+                          percent_mods=[color.YELLOW], percent=True)
 
 
 def generate_frame():

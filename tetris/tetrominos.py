@@ -16,6 +16,7 @@ class Tetromino:
                 Defaults to 3.
         """
         self.color = shape[-1]
+        self.shape = shape[:len(shape)-1]
         self.position = pos
         self.pos_x = pos[0]
         self.pos_y = pos[1]
