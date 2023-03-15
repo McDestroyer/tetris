@@ -134,6 +134,11 @@ current_positions = [
             ["██", color.BLACK] for _ in range(GRID[0])
         ] for _ in range(GRID[1])
     ]
+old_positions = [
+        [
+            ["██", color.BLACK] for _ in range(GRID[0])
+        ] for _ in range(GRID[1])
+    ]
 
 
 def _main() -> None:

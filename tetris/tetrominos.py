@@ -104,10 +104,14 @@ class Tetromino:
         """
 
 
-    def change_status(self, status: int = 0) -> None:
+    def change_status(self, position_items: list, status: int = 0) -> None:
         """Change the status and therefore also position of the tetromino.
 
         Args:
-            status (int):
+            position_items (list):
+                The blocks in their positions.
+            status (int, optional):
                 The status to change the tetromino to.
         """
+        self.status = status
+        position_items[status] = self
