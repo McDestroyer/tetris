@@ -115,3 +115,15 @@ class Tetromino:
         """
         self.status = status
         position_items[status] = self
+
+
+    def update_position(self, position: list):
+        """Update all position variables simultaneously.
+
+        Args:
+            position (list):
+                The position array.
+        """
+        self.position = position
+        self.pos_x = position[0]
+        self.pos_y = position[1]
