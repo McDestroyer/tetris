@@ -177,6 +177,8 @@ def play():
         # Also maybe local multiplayer if I get really bored and we finish too early.
 
 
+    update_screen_dynamically(current_positions, old_positions)
+
     # Wait for the delta -- Done!
     delta_wait(start_time, loop)
 
@@ -450,6 +452,23 @@ def listener() -> list:
         commands.append("store")
 
     return commands
+
+
+def update_screen_dynamically(current_positions, old_positions):
+
+    cursor.set_pos(X_Y_OFFSET[0], X_Y_OFFSET[1])
+
+    for i, row in enumerate(current_positions):
+
+        for j, square in enumerate(row):
+            if square != old_positions[i][j]:
+                text(square[0], mods=[square[1]])
+
+            cursor.cursor_right(2)
+
+        cursor.set_pos(X_Y_OFFSET[0], X_Y_OFFSET[1] + i + 1)
+
+    old_positions = current_positions
 
 
 def delta_wait(start_time: int, current_loop: int):
