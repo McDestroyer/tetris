@@ -454,21 +454,21 @@ def listener() -> list:
     return commands
 
 
-def update_screen_dynamically(current_positions, old_positions):
+def update_screen_dynamically(current_pos, old_pos):
 
     cursor.set_pos(X_Y_OFFSET[0], X_Y_OFFSET[1])
 
-    for i, row in enumerate(current_positions):
+    for i, row in enumerate(current_pos):
 
         for j, square in enumerate(row):
-            if square != old_positions[i][j]:
+            if square != old_pos[i][j]:
                 text(square[0], mods=[square[1]])
 
             cursor.cursor_right(2)
 
         cursor.set_pos(X_Y_OFFSET[0], X_Y_OFFSET[1] + i + 1)
 
-    old_positions = current_positions
+    old_pos = current_pos
 
 
 def delta_wait(start_time: int, current_loop: int):
