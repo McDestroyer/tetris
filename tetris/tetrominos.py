@@ -107,8 +107,8 @@ class Tetromino:
                             grid[i+1][j][0] = "██"
                             grid[i+1][j][1] = color.BLACK
             if direction == "left":
-                for i in range(len(grid)):
-                    for j in range(len(row)):
+                for i in range(0, len(grid)):
+                    for j in range(0, len(row)):
                         if j > len(row)-1:
                             if grid[i][j+1][0] == "##" :
                                 grid[i][j][0] = "##"
