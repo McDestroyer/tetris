@@ -58,12 +58,18 @@ class Tetromino:
             # Step 1. Check to see if you can move:
             if direction == "down":
                 for i, row in enumerate(grid):
-                    for j, square in enumerate(row):
-                        if square[0] == "##":
-                            if grid[i+1][j][0] == "##" or grid[i+1][j][1] == color.BLACK:
-                                pass
-                            else:
+                    if i < len(grid):
+                        for j, square in enumerate(row):
+                            if square[0] == "##":
+                                if grid[i+1][j][0] == "##" or grid[i+1][j][1] == color.BLACK:
+                                    pass
+                                else:
+                                    return False
+                    else:
+                        for j, square in enumerate(row):
+                            if square[0] == "##":
                                 return False
+
 
             # Move
 
