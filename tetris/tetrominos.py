@@ -69,7 +69,7 @@ class Tetromino:
                         for j, square in enumerate(row):
                             if square[0] == "##":
                                 return False
-            if direction == "left":
+            elif direction == "left":
                 for i, row in enumerate(grid):
                     for j, square in enumerate(row):
                         if j > 0:
@@ -80,7 +80,7 @@ class Tetromino:
                                     return False
                         elif square[0] == "##":
                             return False
-            if direction == "right":
+            elif direction == "right":
                 for i, row in enumerate(grid):
                     for j, square in enumerate(row):
                         if j < 0:
