@@ -28,27 +28,30 @@ import os
 import time
 
 try:
-    from utilities import color
-    from utilities import cursor
-    from utilities import animations
-    from utilities import audio
-    from utilities import keyboard_input
-    from utilities.personal_functions import *
+    import color
+    import cursor
+    import animations
+    import audio
+    import keyboard_input
+    from personal_functions import *
 except ModuleNotFoundError:
     current = os.path.dirname(os.path.realpath(__file__))
 
     while current.split("\\")[-1] != "tetris":
         current = os.path.dirname(current)
-    sys.path.append(current)
+    sys.path.append(os.path.join(current, "utilities"))
 
-    from utilities import color
-    from utilities import cursor
-    from utilities import animations
-    from utilities import audio
-    from utilities import keyboard_input
-    from utilities.personal_functions import *
+    import color
+    import cursor
+    import animations
+    import audio
+    import keyboard_input
+    from personal_functions import *
 
 from tetris_functions import *
+from tetrominos import *
+import tetris
+
 
 # Formatting settings (screen size and offset from the left side of the screen so far)
 GRID = (10, 24)
@@ -140,16 +143,19 @@ old_positions = [
         ] for _ in range(GRID[1])
     ]
 
+relevant_blocks = []
+
+
 
 def _main() -> None:
     """Main"""
     initialize()
 
     while not dead:
-        play()
+        play(loop)
 
 
-def play():
+def play(current_loop):
     """Run the game."""
     start_time = time.monotonic_ns()
 
@@ -160,13 +166,18 @@ def play():
     #         print_block(rotate(b, i))
 
     # Gets keyboard commands and sends the summary of the actions requested to a list.
-    # commands = listener()
+    commands = listener()
     # print(commands)
 
 
     # To be added:
         # Check inputs and decide what needs to be done (keyboard listener WIP)
         # Move blocks
+    if tetris.loop == g_loop:
+        pass
+        tetris.loop = 0
+        if not relevant_blocks[0].move("down", 1):
+            pass
             # First rotate and move, then apply gravity
             # Apply wallkick rules when applicable
         # Clear lines and give points
@@ -180,7 +191,8 @@ def play():
     update_screen_dynamically(current_positions, old_positions)
 
     # Wait for the delta -- Done!
-    delta_wait(start_time, loop)
+    delta_wait(start_time)
+    tetris.loop += 1
 
 
 def initialize():
@@ -195,6 +207,9 @@ def initialize():
     audio.play_background(file_location + "/assets/music/Tetris.mp3", -1)
 
     generate_frame()
+
+    relevant_blocks.append(Tetromino(blocks[2], [5, 0], 3))
+    relevant_blocks[0].move_to(current_positions, (5, 7))
 
 
 def loading_screen():
@@ -460,18 +475,24 @@ def update_screen_dynamically(current_pos, old_pos):
 
     for i, row in enumerate(current_pos):
 
-        for j, square in enumerate(row):
-            if square != old_pos[i][j]:
-                text(square[0], mods=[square[1]])
+        if i > 3:
 
-            cursor.cursor_right(2)
+            for j, square in enumerate(row):
+                if square != old_pos[i][j]:
+                    if square[0] == "##":
+                        text("██", mods=[square[1]], letter_time=0, end="", flush=False)
+                    else:
+                        text(square[0], mods=[square[1]], letter_time=0, end="", flush=False)
+                else:
+                    cursor.cursor_right(2)
 
         cursor.set_pos(X_Y_OFFSET[0], X_Y_OFFSET[1] + i + 1)
 
+    text("", end="", letter_time=0, flush=True)
     old_pos = current_pos
 
 
-def delta_wait(start_time: int, current_loop: int):
+def delta_wait(start_time: int):
     """Pause for a short period to rate-limit the game and framerate.
 
     Args:
@@ -484,8 +505,6 @@ def delta_wait(start_time: int, current_loop: int):
         pause_nanoseconds(delta - real_delta)
     else:
         print("OVERTIME")
-
-    current_loop += 1
 
 
 if __name__ == "__main__":

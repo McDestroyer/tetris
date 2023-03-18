@@ -57,15 +57,22 @@ class Tetromino:
 
             # Step 1. Check to see if you can move:
             if direction == "down":
+                # Loop rows
                 for i, row in enumerate(grid):
-                    if i < len(grid):
+                    # As long as it's not at the end
+                    if i < len(grid) - 1:
+                        # Loop positions in the row
                         for j, square in enumerate(row):
+                            # If the current pos is falling
                             if square[0] == "##":
-                                if grid[i+1][j][0] == "##" or grid[i+1][j][1] == color.BLACK:
-                                    pass
-                                else:
+                                # If the next square down is not empty
+                                if not grid[i+1][j][0] == "##" and not grid[i+1][j][1] == color.BLACK:
+                                    # Fail.
                                     return False
+
+                    # If at the end            
                     else:
+                        # If there's a falling block, fail.
                         for j, square in enumerate(row):
                             if square[0] == "##":
                                 return False
@@ -91,6 +98,8 @@ class Tetromino:
                                     return False
                         elif square[0] == "##":
                             return False
+
+
         # Move
 
             # Break if only moving once.
@@ -98,7 +107,7 @@ class Tetromino:
                 break
 
 
-    def move_to(self, grid: list, position: tuple) -> bool:
+    def move_to(self, grid: list, position: tuple):
         """Move the tetromino to specific relative coordinates.
 
         Args:
@@ -108,10 +117,15 @@ class Tetromino:
                 The x and y distance to move.
 
         Returns:
-            bool:
-                Returns True if the move succeeded.
-                Otherwise, returns False.
+            list:
+                The modified grid.
         """
+
+        for i, row in enumerate(self.shape):
+            for j, square in enumerate(row):
+                if square == "##":
+                    grid[i + position[1]][j + position[0]] = [square, self.color]
+
 
 
     def rotate(self, grid: list, direction: int) -> bool:
@@ -121,7 +135,7 @@ class Tetromino:
             grid (list):
                 The current positions of all obstacles.
             direction (int):
-                The direction to rotate. -1  = left and 1 is right.
+                The direction to rotate. -1 = left and 1 is right.
 
         Returns:
             bool:
