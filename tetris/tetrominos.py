@@ -1,7 +1,7 @@
 """Class"""
 
 from utilities import color
-
+from tetris_functions import *
 class Tetromino:
     """The tetrominoes falling, held, or in future."""
 
@@ -153,7 +153,13 @@ class Tetromino:
                 Returns True if the move succeeded.
                 Otherwise, returns False.
         """
-
+        rotato = rotate_array(self.shape, direction)
+        if direction == -1:
+            for i in range(self.pos_y, self.pos_y + self.size):
+                for j in range(self.pos_x, self.pos_x + self.size):
+        elif direction == 1:
+            for i in range(self.pos_y, self.pos_y + self.size):
+                for j in range(self.pos_x, self.pos_x + self.size):
 
     def change_status(self, position_items: list, status: int = 0) -> None:
         """Change the status and therefore also position of the tetromino.
