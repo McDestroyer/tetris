@@ -74,7 +74,7 @@ class Tetromino:
                     for j, square in enumerate(row):
                         if j > 0:
                             if square[0] == "##":
-                                if grid[i][j-1][0] == "##" or grid[i][j-1][1] == color.BLACK:
+                                if grid[i][j+1][0] == "##" or grid[i][j+1][1] == color.BLACK:
                                     pass
                                 else:
                                     return False
@@ -83,15 +83,40 @@ class Tetromino:
             elif direction == "right":
                 for i, row in enumerate(grid):
                     for j, square in enumerate(row):
-                        if j < 0:
+                        if j > len(row)-1:
                             if square[0] == "##":
-                                if grid[i][j+1][0] == "##" or grid[i][j+1][1] == color.BLACK:
+                                if grid[i][j-1][0] == "##" or grid[i][j-1][1] == color.BLACK:
                                     pass
                                 else:
                                     return False
                         elif square[0] == "##":
                             return False
-        # Move
+            if direction == "down":
+                for i in range(len(grid)-1, -1, -1):
+                    for j in range(len(row)):
+                        if grid[i+1][j][0] == "##" :
+                            grid[i][j][0] = "##"
+                            grid[i][j][1] = self.color
+                            grid[i+1][j][0] = "██"
+                            grid[i+1][j][1] = color.BLACK
+            if direction == "left":
+                for i in range(len(grid)):
+                    for j in range(len(row)):
+                        if j > len(row)-1:
+                            if grid[i][j+1][0] == "##" :
+                                grid[i][j][0] = "##"
+                                grid[i][j][1] = self.color
+                                grid[i][j+1][0] = "██"
+                                grid[i][j+1][1] = color.BLACK
+            if direction == "right":
+                for i in range(len(grid)):
+                    for j in range(len(row)-1, -1, -1):
+                        if j > len(row)-1:
+                            if grid[i][j-1][0] == "##" :
+                                grid[i][j][0] = "##"
+                                grid[i][j][1] = self.color
+                                grid[i][j-1][0] = "██"
+                                grid[i][j-1][1] = color.BLACK
 
             # Break if only moving once.
             if not infinite_move:
