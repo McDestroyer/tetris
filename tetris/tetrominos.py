@@ -53,7 +53,7 @@ class Tetromino:
 
         # Suggestion:
 
-        while True:
+        while not False:
 
             # Step 1. Check to see if you can move:
             if direction == "down":
@@ -69,8 +69,28 @@ class Tetromino:
                         for j, square in enumerate(row):
                             if square[0] == "##":
                                 return False
-
-
+            if direction == "left":
+                for i, row in enumerate(grid):
+                        for j, square in enumerate(row):
+                            if j > 0:
+                                if square[0] == "##":
+                                    if grid[i][j-1][0] == "##" or grid[i][j-1][1] == color.BLACK:
+                                        pass
+                                    else:
+                                        return False
+                            elif square[0] == "##":
+                                return False
+            if direction == "right":
+                for i, row in enumerate(grid):
+                        for j, square in enumerate(row):
+                            if j < 0:
+                                if square[0] == "##":
+                                    if grid[i][j+1][0] == "##" or grid[i][j+1][1] == color.BLACK:
+                                        pass
+                                    else:
+                                        return False
+                            elif square[0] == "##":
+                                return False
             # Move
 
             # Break if only moving once.
