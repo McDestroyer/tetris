@@ -548,8 +548,37 @@ def listener() -> list:
     return commands
 
 
-def update_screen_dynamically(current_pos: list, old_pos: list):
+def update_ghost(grid: list, block: Tetromino) -> None:
 
+    for i, row in enumerate(grid):
+        for j, square in enumerate(row):
+            if square[0] == "[]":
+                square = ["██", color.BLACK]
+
+    for i, row in enumerate(grid):
+        for j, square in enumerate(row):
+            if square[0] == "##":
+                ghost_fall(grid, i, j)
+
+
+def ghost_fall(grid: str, start_y: int, x_pos: int):
+    
+    for i in range(start_y, 0, -1):
+        if (grid[i - 1][x_pos][0] == "[]" or
+            (grid[i - 1][x_pos][1] != color.BLACK and
+             grid[i - 1][x_pos][0] != "##")):
+            
+
+
+def update_screen_dynamically(current_pos: list, old_pos: list) -> None:
+    """Update the screen by only replacing the parts that are different.
+
+    Args:
+        current_pos (list):
+            The screen modified during this frame.
+        old_pos (list):
+            The state of the screen from the end of the last frame.
+    """
     cursor.set_pos(X_Y_OFFSET[0]+1, X_Y_OFFSET[1])
 
     for i, row in enumerate(current_pos):
