@@ -15,29 +15,21 @@
     bound(): Combines min() and max() to make sure a value is between an upper and lower bound.
     merge(): Reverses split().
 """
-import sys
-import os
-from time import sleep
-import time
 
 
 # Gets rid of an annoying and irrelevant error message
 
 # pylint: disable=no-member
-# pylint: disable=ungrouped-imports
+# pylint: disable=import-error
 
 
-# Needed for some reason when called from outside this folder ¯\_(ツ)_/¯
-# It adds the parent to the folders it searches in for dependencies.
-# It's nearly entirely unused when in a single folder, it was just irritating me in the editor.
-try:
-    import color
-    import keyboard_input as keybd
-except ModuleNotFoundError:
-    current = os.path.dirname(os.path.realpath(__file__))
-    sys.path.append(current)
-    import color
-    import keyboard_input as keybd
+import sys
+import os
+from time import sleep
+import time
+
+import color
+import keyboard_input as keybd
 
 
 # Input / Output
@@ -90,14 +82,19 @@ def text(*message: object, letter_time: float = .025, line_delay: float = 0,
     # Cycles through and prints each letter with delay.
     for j, i in enumerate(message):
 
-        if keybd.is_currently_pressed("esc"):
-            speed = 0
-
         if not j == 0:
             for letter in sep:
+
+                if keybd.is_currently_pressed("esc"):
+                    speed = 0
+
                 print(letter, end='', flush=flush)
                 sleep(letter_time * speed)
         for letter in str(i):
+
+            if keybd.is_currently_pressed("esc"):
+                speed = 0
+
             print(letter, end='', flush=flush)
             sleep(letter_time * speed)
 
@@ -384,10 +381,11 @@ def rand_choice(options: list, die: str | None = None) -> object | None:
         object: A random choice from the list given.
         None: None if out of bounds of the list (only returned if a die is used).
     """
+    # If no die is given:
     if die is None:
-        return options[rand(len(input))]
+        return options[rand(len(options))]
 
-    # Else
+    # Else:
     try:
         return options[die_parser(die, True)]
     except IndexError:
@@ -539,6 +537,28 @@ def merge(message: list, sep: str = " ") -> str:
             output_message += sep
         output_message += str(section)
     return output_message
+
+
+def shuffle(array: list, depth: int) -> list:
+    """Create a shuffled version of the list.
+
+    Args:
+        array (list):
+            The list to shuffle.
+        depth (int):
+            The number of times to move a card.
+
+    Returns:
+        list: A scrambled version o f the inputted list.
+    """
+    second_array = array[:]
+
+    for _ in range(depth):
+        item = rand_choice(array)
+        second_array.remove(item)
+        second_array.append(item)
+
+    return second_array
 
 
 def pause_nanoseconds(nanoseconds: int) -> None:

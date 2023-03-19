@@ -48,7 +48,7 @@ def print_block(block: list):
             text(letter_time=0)
 
 
-def rotate(shape: list, rotations: int) -> list:
+def rotate_array(shape: list, rotations: int) -> list:
     """Rotate a block a given number of times in the given direction.
 
     Args:
