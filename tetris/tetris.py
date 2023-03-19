@@ -18,6 +18,7 @@ Desc: A generic function containing my default functions.
 # pylint: disable=undefined-variable
 # pylint: disable=invalid-name
 # pylint: disable=global-statement
+# pylint: disable=global-at-module-level
 
 
 # This is an importer I made for all of my programs going forward so I wouldn't have to deal with
@@ -48,9 +49,7 @@ except ModuleNotFoundError:
     import keyboard_input
     from personal_functions import *
 
-from tetris_functions import *
 from tetrominos import *
-import tetris
 
 
 # Formatting settings (screen size and offset from the left side of the screen so far)
@@ -69,13 +68,14 @@ dead = False
 
 # The delta time (how long each frame should take)
 delta_seconds = 1 / 60
-delta = delta_seconds / 1_000_000_000
+delta = delta_seconds * 1_000_000_000
 
 # The time between downward block movements. Scales inversely with level.
 g_time = (0.8 - ((level - 1) * 0.007)) ** (level - 1)
 previous_g = time.monotonic_ns()
 
 # The current loop and the loop on which to move down.
+global loop
 loop = 0
 g_loop = rounder(g_time * (1 / delta_seconds))
 
@@ -111,8 +111,10 @@ blocks = [
         color.rgb_hex("80", "00", "80") # Purple
     ],
     [
-        [BS, BS], # [][]
-        [BS, BS], # [][]
+        [bl, bl, bl, bl],
+        [bl, BS, BS, bl], # [][]
+        [bl, BS, BS, bl], # [][]
+        [bl, bl, bl, bl],
         color.rgb_hex("ff", "ff", "00") # Yellow
     ],
     [
@@ -129,6 +131,13 @@ blocks = [
     ]
 ]
 
+blank = [
+        [bl, bl, bl, bl],
+        [bl, bl, bl, bl],
+        [bl, bl, bl, bl],
+        [bl, bl, bl, bl],
+        color.BLACK
+]
 # This is the screen grid of squares and their colors
 # The outer list is the list of horizontal lines. The inner list is the relevant column entries.
 # Example: [0][0] is the top left, [4][3] is the 5th item down and the 4th item across.
@@ -142,7 +151,6 @@ old_positions = [
             ["██", color.BLACK] for _ in range(GRID[0])
         ] for _ in range(GRID[1])
     ]
-
 relevant_blocks = []
 
 
@@ -152,12 +160,13 @@ def _main() -> None:
     initialize()
 
     while not dead:
-        play(loop)
+        play()
 
 
-def play(current_loop):
+def play():
     """Run the game."""
     start_time = time.monotonic_ns()
+    global loop
 
     # Prints all blocks in all rotations as a test. It works.
     # Left it as a visual representation of action occuring.
@@ -173,11 +182,73 @@ def play(current_loop):
     # To be added:
         # Check inputs and decide what needs to be done (keyboard listener WIP)
         # Move blocks
-    if tetris.loop == g_loop:
-        pass
-        tetris.loop = 0
-        if not relevant_blocks[0].move("down", 1):
-            pass
+
+
+    if "rotate_right" in commands:
+        if not relevant_blocks[0].check_dir(current_positions):
+            loop = 0
+        relevant_blocks[0].rotate(current_positions, 1)
+    elif "rotate_left" in commands:
+        if not relevant_blocks[0].check_dir(current_positions):
+            loop = 0
+        relevant_blocks[0].rotate(current_positions, -1)
+
+    if "right" in commands:
+        relevant_blocks[0].move(current_positions, "right")
+        if not relevant_blocks[0].check_dir(current_positions):
+            loop = 0
+    elif "left" in commands:
+        relevant_blocks[0].move(current_positions, "left")
+        if not relevant_blocks[0].check_dir(current_positions):
+            loop = 0
+
+    if "hard_drop" in commands:
+        relevant_blocks[0].move(current_positions, "down", True)
+        solidify(current_positions, relevant_blocks)
+        relevant_blocks[0].move_to(current_positions, [3, 2])
+        relevant_blocks[-2] = Tetromino(rand_choice(blocks), [2, 3])
+        relevant_blocks[1].visualize(X_Y_OFFSET)
+        relevant_blocks[2].visualize(X_Y_OFFSET)
+        relevant_blocks[3].visualize(X_Y_OFFSET)
+    if "soft_drop" in commands:
+        if loop >= 2:
+            if relevant_blocks[0].move(current_positions, "down"):
+                loop = 0
+
+    if "store" in commands:
+
+        if not relevant_blocks[0].was_held:
+
+            clear(current_positions)
+
+            relevant_blocks[-1], relevant_blocks[0] = relevant_blocks[0], relevant_blocks[-1]
+            relevant_blocks[-1].was_held = True
+            relevant_blocks[-1].status = -1
+            relevant_blocks[0].status = 0
+
+            if relevant_blocks[0].shape == blank[:-1]:
+                for i in range(len(relevant_blocks) - 2):
+                    relevant_blocks[i] = relevant_blocks[i + 1]
+                    relevant_blocks[i].status = i
+
+            relevant_blocks[0].move_to(current_positions, [3, 2])
+            relevant_blocks[-2] = Tetromino(rand_choice(blocks), [2, 3])
+
+            relevant_blocks[-1].visualize(X_Y_OFFSET)
+            relevant_blocks[1].visualize(X_Y_OFFSET)
+            relevant_blocks[2].visualize(X_Y_OFFSET)
+            relevant_blocks[3].visualize(X_Y_OFFSET)
+
+    # Gravity
+    if loop >= g_loop:
+        loop = 0
+        if not relevant_blocks[0].move(current_positions, "down"):
+            solidify(current_positions, relevant_blocks)
+            relevant_blocks[0].move_to(current_positions, [3, 2])
+            relevant_blocks[-2] = Tetromino(rand_choice(blocks), [2, 3])
+            relevant_blocks[1].visualize(X_Y_OFFSET)
+            relevant_blocks[2].visualize(X_Y_OFFSET)
+            relevant_blocks[3].visualize(X_Y_OFFSET)
             # First rotate and move, then apply gravity
             # Apply wallkick rules when applicable
         # Clear lines and give points
@@ -187,12 +258,12 @@ def play(current_loop):
 
         # Also maybe local multiplayer if I get really bored and we finish too early.
 
-
-    update_screen_dynamically(current_positions, old_positions)
+    if current_positions != old_positions:
+        update_screen_dynamically(current_positions, old_positions)
 
     # Wait for the delta -- Done!
     delta_wait(start_time)
-    tetris.loop += 1
+    loop += 1
 
 
 def initialize():
@@ -208,8 +279,16 @@ def initialize():
 
     generate_frame()
 
-    relevant_blocks.append(Tetromino(blocks[2], [5, 0], 3))
-    relevant_blocks[0].move_to(current_positions, (5, 7))
+    relevant_blocks.append(Tetromino(rand_choice(blocks), [5, 0], 0))
+    relevant_blocks.append(Tetromino(rand_choice(blocks), [5, 0], 1))
+    relevant_blocks.append(Tetromino(rand_choice(blocks), [5, 0], 2))
+    relevant_blocks.append(Tetromino(rand_choice(blocks), [5, 0], 3))
+    relevant_blocks.append(Tetromino(blank, [5, 0], 3))
+    relevant_blocks[0].move_to(current_positions, [3, 2])
+    relevant_blocks[1].visualize(X_Y_OFFSET)
+    relevant_blocks[2].visualize(X_Y_OFFSET)
+    relevant_blocks[3].visualize(X_Y_OFFSET)
+    update_screen_dynamically(current_positions, old_positions)
 
 
 def loading_screen():
@@ -264,7 +343,7 @@ def generate_frame():
          letter_time=0, flush=False)
 
     # Walls of frame and grid
-    for i in range(GRID[1]):
+    for i in range(GRID[1] - 4):
         cursor.cursor_right(X_Y_OFFSET[0] - (len(FRAME_SIDE_MATERIAL) + 1))
         text(FRAME_SIDE_MATERIAL, end=" ", letter_time=0, flush=False)
 
@@ -451,17 +530,17 @@ def listener() -> list:
             commands.remove("left")
 
     if keyboard_input.is_currently_pressed("s"):
-        commands.append("soft drop")
+        commands.append("soft_drop")
     if keyboard_input.is_newly_pressed("w"):
-        commands.append("hard drop")
+        commands.append("hard_drop")
 
     if keyboard_input.is_newly_pressed("j"):
-        commands.append("rotate left")
+        commands.append("rotate_left")
     if keyboard_input.is_newly_pressed("l"):
         if "rotate left" not in commands:
-            commands.append("rotate right")
+            commands.append("rotate_right")
         else:
-            commands.remove("rotate left")
+            commands.remove("rotate_left")
 
     if keyboard_input.is_newly_pressed("i"):
         commands.append("store")
@@ -469,9 +548,9 @@ def listener() -> list:
     return commands
 
 
-def update_screen_dynamically(current_pos, old_pos):
+def update_screen_dynamically(current_pos: list, old_pos: list):
 
-    cursor.set_pos(X_Y_OFFSET[0], X_Y_OFFSET[1])
+    cursor.set_pos(X_Y_OFFSET[0]+1, X_Y_OFFSET[1])
 
     for i, row in enumerate(current_pos):
 
@@ -479,17 +558,12 @@ def update_screen_dynamically(current_pos, old_pos):
 
             for j, square in enumerate(row):
                 if square != old_pos[i][j]:
-                    if square[0] == "##":
-                        text("██", mods=[square[1]], letter_time=0, end="", flush=False)
-                    else:
-                        text(square[0], mods=[square[1]], letter_time=0, end="", flush=False)
+                    text("██", mods=[square[1]], letter_time=0, end="")
+                    old_pos[i][j] = square[:]
                 else:
                     cursor.cursor_right(2)
 
-        cursor.set_pos(X_Y_OFFSET[0], X_Y_OFFSET[1] + i + 1)
-
-    text("", end="", letter_time=0, flush=True)
-    old_pos = current_pos
+        cursor.set_pos(X_Y_OFFSET[0]+1, X_Y_OFFSET[1] + i-4 + 2)
 
 
 def delta_wait(start_time: int):
@@ -500,11 +574,13 @@ def delta_wait(start_time: int):
         loop (int): The current loop (used primarily for gravity)
     """
     end_time = time.monotonic_ns()
-    real_delta = start_time - end_time
+    real_delta = end_time - start_time
     if real_delta < delta:
         pause_nanoseconds(delta - real_delta)
     else:
+        cursor.set_pos()
         print("OVERTIME")
+
 
 
 if __name__ == "__main__":
