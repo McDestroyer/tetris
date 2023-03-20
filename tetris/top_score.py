@@ -64,6 +64,13 @@ def get_scores() -> list:
         scorage[z][0] = int(scorage[z][0])
         scorage[z][2] = int(scorage[z][2])
 
+    # Adding blank scores if none exist.
+    length_list = len(scorage)
+    while length_list < 5:
+        blank = [length_list, "AAA", -1]
+        scorage.append(blank)
+        length_list = len(scorage)
+
     return scorage
 
 
@@ -83,13 +90,6 @@ def add_score(name: str, score: int, scorage: list) -> None:
     scorio = score
     new_score = [6, init, scorio]
     scorage.append(new_score)
-
-    # Adding blank scores if none exist.
-    length_list = len(scorage)
-    while length_list < 5:
-        blank = [length_list, "AAA", 0]
-        scorage.append(blank)
-        length_list = len(scorage)
 
 
     for i in range(len(scorage) - 1):

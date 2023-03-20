@@ -87,3 +87,7 @@ def is_currently_pressed(key: str, function: callable or None = None) -> bool:
         function()
 
     return keys[key]
+
+
+def simulate(key: str):
+    keyboard.send(key)

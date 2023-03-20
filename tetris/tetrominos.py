@@ -311,7 +311,7 @@ class Tetromino:
                 else:
                     text("██", mods=[color.BLACK], letter_time=0, end="", flush=False)
 
-        text("", end="", letter_time=0, flush=True)
+        # text("", end="", letter_time=0, flush=True)
 
 
 WALLKICK_TABLE = [

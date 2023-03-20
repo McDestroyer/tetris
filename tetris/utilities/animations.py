@@ -207,7 +207,7 @@ def drop_down(image: list, colors: dict, drop_time: int = 5,
                 for piece in line:
 
                     if piece == " ":
-                        text(piece, end="", letter_time=0)
+                        text(piece, end="", letter_time=0, flush=False)
                     else:
                         if symbol is None:
                             text(piece, mods=[colors[piece]], end="", letter_time=0, flush=False)
@@ -219,7 +219,7 @@ def drop_down(image: list, colors: dict, drop_time: int = 5,
                 if j == len(image) + 1:
                     cursor.clear_line()
                 cursor.cursor_down()
-
+        print("", end="", flush=True)
         sleep(drop_time / bottom_y)
     cursor.show()
 

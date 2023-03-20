@@ -1,5 +1,5 @@
-1 JCF 4269
-2 Zep 10
-3 AAA 0
-4 AAA 0
-5 AAA 0
+1 AAA -1
+2 AAA -1
+3 AAA -1
+4 AAA -1
+5 AAA -1

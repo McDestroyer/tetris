@@ -50,6 +50,7 @@ except ModuleNotFoundError:
     from personal_functions import *
 
 from tetrominos import *
+import top_score
 
 
 # Formatting settings (screen size and offset from the left side of the screen so far)
@@ -64,6 +65,8 @@ global score
 score = 0
 global level
 level = 1
+global level_goal
+level_goal = 5
 global lines
 lines = 0
 dead = False
@@ -74,7 +77,6 @@ delta = delta_seconds * 1_000_000_000
 
 # The time between downward block movements. Scales inversely with level.
 g_time = (0.8 - ((level - 1) * 0.007)) ** (level - 1)
-previous_g = time.monotonic_ns()
 
 # The current loop and the loop on which to move down.
 global loop
@@ -158,14 +160,23 @@ relevant_blocks = []
 
 
 def clear_lines (grid: list) -> int:
+    """Clear any full lines and return the number cleared.
+
+    Args:
+        grid (list):
+            The current positions of everything.
+
+    Returns:
+        int: The number of lines cleared.
+    """
     cleared_lines=0
-    for i, row in enumerate(grid):
-        clear = True
+    for _, row in enumerate(grid):
+        can_clear = True
         for _, square in enumerate(row):
             if square[0] in ("##", "[]"):
-                clear = False
+                can_clear = False
 
-        if (not ["██", color.BLACK] in row) and clear:
+        if (not ["██", color.BLACK] in row) and can_clear:
             empty_line = [["██", color.BLACK] for _ in enumerate(row)]
             grid.remove(row)
             cleared_lines += 1
@@ -273,20 +284,26 @@ def play():
         # Also maybe local multiplayer if I get really bored and we finish too early.
 
     update_ghost(current_positions, relevant_blocks[0])
+
+    level_up()
+
     update_score()
     update_level()
-    update_lines()
-    global score
-    score += 1
-    global lines
-    lines = score / 2
-    global level
-    level -= 1
+    update_lines(level_goal)
 
-    clear_lines(current_positions)
+    global lines
+
+    lines += clear_lines(current_positions)
 
     if current_positions != old_positions:
         update_screen_dynamically(current_positions, old_positions)
+
+
+    if check_death(current_positions):
+        death_animation(current_positions, False)
+
+    if level == 20:
+        death_animation(current_positions, True)
 
     # Wait for the delta -- Done!
     delta_wait(start_time)
@@ -325,20 +342,20 @@ def loading_screen():
            " then press Enter to start the game...", mods=[color.CYAN])
 
     logo = [
-        "##########  --------  __________  ======    ......    //////  ",
+        "##########  --------  __________  ======    ......  //////  ",
         "    ##      --            __      ==    ==    ..    //        ",
-        "    ##      ----          __      ======      ..      //////  ",
-        "    ##      --            __      ==  ==      ..            //",
-        "    ##      --------      __      ==    ==  ......    //////  "
+        "    ##      ----          __      ======      ..    //////  ",
+        "    ##      --            __      ==  ==      ..        //",
+        "    ##      --------      __      ==    ==  ......  //////  "
     ]
 
     symbol_colors = {
-        "#": color.GREEN,
-        "-": color.RED,
-        "_": color.ERROR,
-        "=": color.BLUE,
-        ".": color.YELLOW,
-        "/": color.CYAN
+        "#": color.rgb_hex("ff", "00", "00"),
+        "-": color.rgb_hex("ff", "7f", "00"),
+        "_": color.rgb_hex("ff", "ff", "00"),
+        "=": color.rgb_hex("00", "ff", "00"),
+        ".": color.rgb_hex("00", "00", "ff"),
+        "/": color.rgb_hex("80", "00", "80")
     }
 
     animations.drop_down(logo, symbol_colors, 5, 20, "█")
@@ -399,7 +416,7 @@ def generate_frame():
 
     text(FRAME_TOP_MATERIAL * (rounder((((X_Y_OFFSET[0] -
          (len(FRAME_SIDE_MATERIAL) + 1))- 4) / 2)) - 1),
-         letter_time=0, flush=True, end="")
+         letter_time=0, flush=False, end="")
 
     # Walls of hold and empty contents
     for i in range(4):
@@ -538,7 +555,6 @@ def generate_frame():
          letter_time=0, flush=True, end="")
 
 
-
 def listener() -> list:
     """Find out which commands need to be run. Could be later modified to run these commands.
 
@@ -658,7 +674,7 @@ def ghost_fall(grid: list, start_y: int, x_pos: int, ghost_color: str, dist: int
 
 
 def update_score():
-
+    """Put the current score on the screen."""
     y = X_Y_OFFSET[1] + 5
     cursor.set_pos(0, y + 2)
     val_len = len(str(score))
@@ -666,11 +682,11 @@ def update_score():
     text(FRAME_SIDE_MATERIAL, letter_time=0, flush=False, end=" ")
 
     text(" " * int(4 - val_len / 2), letter_time=0, flush=False, end="")
-    text(score, letter_time=0, flush=True, end="")
+    text(score, letter_time=0, flush=False, end="")
 
 
 def update_level():
-
+    """Put the current level on the screen."""
     y = X_Y_OFFSET[1] + 5 + 2
     cursor.set_pos(0, y + 2)
     val_len = len(str(level))
@@ -678,20 +694,63 @@ def update_level():
     text(FRAME_SIDE_MATERIAL, letter_time=0, flush=False, end=" ")
 
     text(" " * int(4 - val_len / 2), letter_time=0, flush=False, end="")
-    text(level, letter_time=0, flush=True, end="")
+    text(level, letter_time=0, flush=False, end="")
 
 
-def update_lines():
-
+def update_lines(level_up_num):
+    """Put the current number of cleared lines on the screen."""
     y = X_Y_OFFSET[1] + 5 + 2 + 2
     cursor.set_pos(0, y + 2)
-    val_len = len(str(lines))
+
+    val_len = len(str(lines) + "/" + str(level_up_num))
 
     text(FRAME_SIDE_MATERIAL, letter_time=0, flush=False, end=" ")
 
     text(" " * int(4 - val_len / 2), letter_time=0, flush=False, end="")
-    text(lines, letter_time=0, flush=True, end="")
+    text(str(lines) + "/" + str(level_up_num), letter_time=0, flush=False, end="")
 
+
+def level_up():
+    """Check and level up if enough levels have been aquired.
+
+    Args:
+        current_level (int):
+            The current level.
+        current_lines (int):
+            The current number of lines.
+        level_up_num (int):
+            The number of lines needed to level up.
+        gravity_loop (int):
+            g_loop.
+        gravity_time (float):
+            g_time.
+    """
+    global level_goal
+    if lines >= level_goal:
+        global level
+        level_goal += 5 * level
+        level += 1
+        global g_time
+        global g_loop
+        g_time = (0.8 - ((level - 1) * 0.007)) ** (level - 1)
+        g_loop = rounder(g_time * (1 / delta_seconds))
+
+
+def check_death(grid: list) -> bool:
+    """Check to see if you are dead.
+
+    Args:
+        grid (list):
+            The current positions of everything.
+
+    Returns:
+        bool: Dead?
+    """
+    for i in range(4):
+        for j in range(10):
+            if grid[i][j][0] == "██" and grid[i][j][1] != color.BLACK:
+                return True
+    return False
 
 
 def update_screen_dynamically(current_pos: list, old_pos: list) -> None:
@@ -712,14 +771,16 @@ def update_screen_dynamically(current_pos: list, old_pos: list) -> None:
             for j, square in enumerate(row):
                 if square != old_pos[i][j]:
                     if square[0] == "[]":
-                        text("[]", mods=[square[1], color.BACKGROUND_BLACK], letter_time=0, end="")
+                        text("[]", mods=[square[1], color.BACKGROUND_BLACK],
+                             letter_time=0, end="", flush=False)
                     else:
-                        text("██", mods=[square[1]], letter_time=0, end="")
+                        text("██", mods=[square[1]], letter_time=0, end="", flush=False)
                     old_pos[i][j] = square[:]
                 else:
                     cursor.cursor_right(2)
 
         cursor.set_pos(X_Y_OFFSET[0]+1, X_Y_OFFSET[1] + i-4 + 2)
+    print("", end="", flush=True)
 
 
 def delta_wait(start_time: int):
@@ -733,9 +794,126 @@ def delta_wait(start_time: int):
     real_delta = end_time - start_time
     if real_delta < delta:
         pause_nanoseconds(delta - real_delta)
+        cursor.set_pos()
+        print("        ")
     else:
         cursor.set_pos()
         print("OVERTIME")
+
+
+def death_animation(grid: list, state: bool) -> None:
+    """Generate the death message.
+
+    Args:
+        grid (list):
+            The current positions of everything.
+    """
+
+    global score
+    score = 2
+    audio.stop_music()
+    sleep(.5)
+    for i, row in enumerate(grid):
+        for j, square in enumerate(row):
+            if square[0] == "██" and square[1] != color.BLACK:
+                grid[i][j][1] = color.BRIGHT_BLACK
+        update_screen_dynamically(grid, old_positions)
+        sleep(.25)
+
+    sleep(1)
+
+    cursor.set_pos(4, 5)
+    text("██" * 20, letter_time=0, end="", mods=[color.WHITE])
+    for i in range(17):
+        cursor.set_pos(4, 6 + i)
+        text("██" * 1, letter_time=0, end="", mods=[color.WHITE])
+        text("  " * 18, letter_time=0, end="")
+        text("██" * 1, letter_time=0, end="", mods=[color.WHITE])
+    cursor.set_pos(4, 7 + i)
+    text("██" * 20, letter_time=0, end="", mods=[color.WHITE])
+
+    y = 7
+
+    cursor.set_pos(8, y)
+    if state is False:
+        died = "YOU LOST"
+        cursor.cursor_right(16 - int(len(died) / 2))
+        text(died, end="", mods=[color.RED])
+    else:
+        won = "YOU WON!"
+        cursor.cursor_right(16 - int(len(won) / 2))
+        text(won, end="", mods=[color.BRIGHT_GREEN])
+
+    y += 2
+    cursor.set_pos(8, y)
+
+    high_scores = top_score.get_scores()
+    high = False
+
+    if score > high_scores[4][2]:
+        text("New Highscore!!!", end="", mods=[color.BRIGHT_YELLOW, color.UNDERLINE])
+        text(" ", end="", mods=[color.BRIGHT_YELLOW])
+        high = True
+
+    text(f"Score: {score}", end="", mods=[color.GREEN])
+
+    y += 1
+    cursor.set_pos(8, y)
+    text(f"Lines Cleared: {lines}", end="", mods=[color.GREEN])
+
+    y += 1
+    cursor.set_pos(8, y)
+    text(f"Level Reached: {level}", end="", mods=[color.GREEN])
+
+    cursor.set_pos(8, y + 4)
+    text("High Scores:", end="", mods=[color.BRIGHT_YELLOW])
+
+    num = -1
+    mod_scores = []
+    for i, val in enumerate(high_scores):
+
+        if score > val[2] and num == -1:
+            mod_scores.append([i + 1, "___", score])
+            num = i
+
+        mod_scores.append(val)
+
+
+        if len(mod_scores) >= 5:
+            mod_scores = mod_scores[:5]
+            break
+
+
+    for i, val in enumerate(mod_scores):
+        cursor.set_pos(8, y + 6 + i)
+        text(f"{val[1]}: {val[2]}", end="", mods=[color.BRIGHT_BLUE])
+
+
+    y += 2
+    cursor.set_pos(8, y)
+    text("Please Hit Enter...", end="", mods=[color.CYAN])
+
+    cursor.set_pos(0, 25)
+    st = time.monotonic_ns()
+    while time.monotonic_ns() < st + 100_000_000:
+        input()
+        cursor.cursor_up()
+
+    cursor.set_pos(0, 24)
+    cursor.clear_screen_after()
+
+    cursor.set_pos(8, y)
+
+    if high:
+        text("Please enter your initials below:", mods=[color.CYAN])
+        cursor.set_pos(8, y + 4 + num)
+        initials = input(color.BRIGHT_BLUE).upper()
+        top_score.add_score(initials, score, high_scores)
+    else:
+        text("Reload the game to play again!", end="", mods=[color.CYAN])
+
+    cursor.set_pos(0, 25)
+    sys.exit()
 
 
 
