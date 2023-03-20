@@ -808,9 +808,6 @@ def death_animation(grid: list, state: bool) -> None:
         grid (list):
             The current positions of everything.
     """
-
-    global score
-    score = 2
     audio.stop_music()
     sleep(.5)
     for i, row in enumerate(grid):
