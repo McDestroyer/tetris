@@ -3,13 +3,13 @@
 Things to do (not necessarily in order):
 
 	Music -- Jason (Done!)
-	Block downward movement
-	Movement controls
-	Rotation controls
-	"Wall kicks" (moving to the side because of a rotation)
+	Block downward movement -- Done
+	Movement controls -- Done
+	Rotation controls -- Done
+	"Wall kicks" (moving to the side because of a rotation) -- Done
 	Scores
-	Gameplay frame
-	Block storage
+	Gameplay frame -- Done
+	Block storage -- Done
 	Death
 	line clearing
 	levels
