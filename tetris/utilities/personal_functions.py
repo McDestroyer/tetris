@@ -26,7 +26,6 @@
 import sys
 import os
 from time import sleep
-import time
 
 import color
 import keyboard_input as keybd
@@ -568,10 +567,7 @@ def pause_nanoseconds(nanoseconds: int) -> None:
         nanoseconds (int):
             The amount of time in billionths of a second to pause.
     """
-    start_time = time.monotonic_ns()
-    end_time = start_time + bound(nanoseconds)
-    while time.monotonic_ns() < end_time:
-        pass
+    sleep(nanoseconds / 1000000000)
 
 
 # Other

@@ -59,10 +59,7 @@ def rotate_array(shape: list, rotations: int) -> list:
     Returns:
         list: The block rotated a given number of times.
     """
-    # Clones the shape and temporarily removes the metadata to allow for simpler rotation code.
     block = shape[:]
-    shape_color = block[-1]
-    block.remove(shape_color)
 
     # A rotation algorithm created via. trial and error.
     # I couldn't explain it if I tried, but it seems to work.
@@ -88,6 +85,39 @@ def rotate_array(shape: list, rotations: int) -> list:
             rotated = block[:]
         block = rotated
 
-    block.append(shape_color)
-
     return block
+
+
+def solidify(grid: list, relevant) -> None:
+    """Stop all falling pieces from falling.
+
+    Args:
+        grid (list): The positions of everything on the screen.
+    """
+    for row in grid:
+        for square in row:
+            if square[0] != "[]":
+                square[0] = "██"
+
+    for i in range(len(relevant) - 2):
+        relevant[i] = relevant[i + 1]
+        relevant[i].status = i
+
+
+# def add_new(relevant):
+
+#     for i in range(len(relevant) - 2):
+#         relevant[i] = relevant[i + 1]
+#     relevant[-2] = Tetromino(rand_choice(blocks), [2, 3])
+
+
+def clear(grid: list) -> None:
+    """Clear all falling pieces from falling.
+
+    Args:
+        grid (list): The positions of everything on the screen.
+    """
+    for i, row in enumerate(grid):
+        for j, square in enumerate(row):
+            if square[0] == "##":
+                grid[i][j] = ["██", color.BLACK]

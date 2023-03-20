@@ -1,5 +1,9 @@
 """Class"""
 
+# pylint: disable=consider-using-enumerate
+# pylint: disable=unused-wildcard-import
+# pylint: disable=wildcard-import
+
 from utilities import color
 from tetris_functions import *
 class Tetromino:
@@ -20,6 +24,7 @@ class Tetromino:
         self.color = shape[-1]
         self.shape = shape[:len(shape)-1]
         self.position = pos
+        self.rotation = 0
         self.pos_x = pos[0]
         self.pos_y = pos[1]
         self.size = len(shape[0])
@@ -48,89 +53,116 @@ class Tetromino:
                 Otherwise, returns False.
         """
 
-        # Insert code here
-        # TO-DO Zeph here
-
-        # Suggestion:
-
         while not False:
 
             # Step 1. Check to see if you can move:
-            if direction == "down":
-                # Loop rows
-                for i, row in enumerate(grid):
-                    # As long as it's not at the end
-                    if i < len(grid) - 1:
-                        # Loop positions in the row
-                        for j, square in enumerate(row):
-                            # If the current pos is falling
-                            if square[0] == "##":
-                                # If the next square down is not empty
-                                if not grid[i+1][j][0] == "##" and not grid[i+1][j][1] == color.BLACK:
-                                    # Fail.
-                                    return False
+            if not self.check_dir(grid, direction):
+                return False
 
-                    # If at the end            
-                    else:
-                        # If there's a falling block, fail.
-                        for j, square in enumerate(row):
-                            if square[0] == "##":
-                                return False
-            elif direction == "left":
-                for i, row in enumerate(grid):
-                    for j, square in enumerate(row):
-                        if j > 0:
-                            if square[0] == "##":
-                                if grid[i][j+1][0] == "##" or grid[i][j+1][1] == color.BLACK:
-                                    pass
-                                else:
-                                    return False
-                        elif square[0] == "##":
-                            return False
-            elif direction == "right":
-                for i, row in enumerate(grid):
-                    for j, square in enumerate(row):
-                        if j > len(row)-1:
-                            if square[0] == "##":
-                                if grid[i][j-1][0] == "##" or grid[i][j-1][1] == color.BLACK:
-                                    pass
-                                else:
-                                    return False
-                        elif square[0] == "##":
-                            return False
+
             if direction == "down":
+                # Loops bottom to top to avoid infinite loops.
                 for i in range(len(grid)-1, -1, -1):
-                    for j in range(len(row)):
-                        if grid[i+1][j][0] == "##" :
-                            grid[i][j][0] = "##"
-                            grid[i][j][1] = self.color
-                            grid[i+1][j][0] = "██"
-                            grid[i+1][j][1] = color.BLACK
-            if direction == "left":
+                    for j in range(len(grid[0])):
+                        # If it's a falling block, move it to the next slot
+                        # and make the previous one empty.
+                        if grid[i][j][0] == "##":
+                            grid[i+1][j][0] = "##"
+                            grid[i+1][j][1] = self.color
+                            grid[i][j][0] = "██"
+                            grid[i][j][1] = color.BLACK
+                # Tell the block where it is.
+                self.update_position([self.pos_x, self.pos_y + 1])
+
+            elif direction == "left":
                 for i in range(0, len(grid)):
-                    for j in range(0, len(row)):
-                        if j > len(row)-1:
+                    for j in range(0, len(grid[0])):
+                        if j < len(grid[0])-1:
                             if grid[i][j+1][0] == "##" :
                                 grid[i][j][0] = "##"
                                 grid[i][j][1] = self.color
                                 grid[i][j+1][0] = "██"
                                 grid[i][j+1][1] = color.BLACK
-            if direction == "right":
+                self.update_position([self.pos_x - 1, self.pos_y])
+
+            elif direction == "right":
                 for i in range(len(grid)):
-                    for j in range(len(row)-1, -1, -1):
-                        if j > len(row)-1:
+                    for j in range(len(grid[0])-1, -1, -1):
+                        if j > 0:
                             if grid[i][j-1][0] == "##" :
                                 grid[i][j][0] = "##"
                                 grid[i][j][1] = self.color
                                 grid[i][j-1][0] = "██"
                                 grid[i][j-1][1] = color.BLACK
+                self.update_position([self.pos_x + 1, self.pos_y])
 
             # Break if only moving once.
             if not infinite_move:
-                break
+                return True
 
 
-    def move_to(self, grid: list, position: tuple):
+    def check_dir(self, grid: list, direction: str = "down") -> bool:
+        """Check to see if a block could move in the given direction.
+
+        Args:
+            grid (list):
+                The current positions of everything.
+            direction (str, optional):
+                The direction to check.
+                Defaults to "down".
+
+        Returns:
+            bool: True if it can move. Otherwise, False.
+        """
+        if direction == "down":
+            # Loop rows
+            for i, row in enumerate(grid):
+                # As long as it's not at the end
+                if i < len(grid) - 1:
+                    # Loop positions in the row
+                    for j, square in enumerate(row):
+                        # If the current pos is falling
+                        if square[0] == "##":
+                            # If the next square down is not empty
+                            if (grid[i+1][j][0] == "██" and
+                                not grid[i+1][j][1] == color.BLACK):
+                                # Fail.
+                                return False
+
+                # If at the end
+                else:
+                    # If there's a falling block, fail.
+                    for j, square in enumerate(row):
+                        if square[0] == "##":
+                            return False
+
+        elif direction == "left":
+            for i, row in enumerate(grid):
+                for j, square in enumerate(row):
+                    if j > 0:
+                        if square[0] == "##":
+                            if grid[i][j-1][0] in ("##", "[]") or grid[i][j-1][1] == color.BLACK:
+                                pass
+                            else:
+                                return False
+                    elif square[0] == "##":
+                        return False
+
+        elif direction == "right":
+            for i, row in enumerate(grid):
+                for j, square in enumerate(row):
+                    if j < len(row)-1:
+                        if square[0] == "##":
+                            if grid[i][j+1][0] in ("##", "[]") or grid[i][j+1][1] == color.BLACK:
+                                pass
+                            else:
+                                return False
+                    elif square[0] == "##":
+                        return False
+        return True
+
+
+    def move_to(self, grid: list, position: list):
         """Move the tetromino to specific relative coordinates.
 
         Args:
@@ -149,6 +181,8 @@ class Tetromino:
                 if square == "##":
                     grid[i + position[1]][j + position[0]] = [square, self.color]
 
+        self.update_position(position)
+
 
 
     def rotate(self, grid: list, direction: int) -> bool:
@@ -165,15 +199,54 @@ class Tetromino:
                 Returns True if the move succeeded.
                 Otherwise, returns False.
         """
-        rotato = rotate_array(self.shape, direction)
-        if direction == -1:
-            for i in range(self.pos_y, self.pos_y + self.size):
-                for j in range(self.pos_x, self.pos_x + self.size):
-                    pass
-        elif direction == 1:
-            for i in range(self.pos_y, self.pos_y + self.size):
-                for j in range(self.pos_x, self.pos_x + self.size):
-                    pass
+        rotated_piece = rotate_array(self.shape, direction)
+
+        # Check where it will fit.
+        for x_offset, y_offset in wallkick_motion(self.rotation, direction,
+                                    self.color == color.rgb_hex("00", "ff", "ff")):
+            mod_x = self.pos_x + x_offset
+            mod_y = self.pos_y + -y_offset
+
+            fail = False
+            succeed = False
+
+            # Loop through the rotated piece.
+            for i in range(mod_y, mod_y + self.size):
+                for j in range(mod_x, mod_x + self.size):
+                    # If part of the piece would be here:
+                    if rotated_piece[i - mod_y][j - mod_x] == "##":
+                        if 0 <= j < 10:
+                            # If it would hit something, fail. Otherwise, continue.
+                            if grid[i][j][1] != color.BLACK and not grid[i][j][0] in ("##", "[]"):
+                                fail = True
+                        else:
+                            fail = True
+                    if fail:
+                        break
+                if fail:
+                    break
+
+            if fail is False:
+                succeed = True
+                break
+
+        if not succeed:
+            return False
+
+        clear(grid)
+        self.shape = rotated_piece
+        self.rotation = (self.rotation + direction) % 4
+        self.update_position([mod_x, mod_y])
+
+        # Actually place it.
+        # Loop through the rotated piece.
+        for i in range(mod_y, mod_y + self.size):
+            for j in range(mod_x, mod_x + self.size):
+                # If part of the piece would be here, set it.
+                if self.shape[i - mod_y][j - mod_x] == "##":
+                    grid[i][j] = ["##", self.color]
+
+        return True
 
 
     def change_status(self, position_items: list, status: int = 0) -> None:
@@ -199,3 +272,88 @@ class Tetromino:
         self.position = position
         self.pos_x = position[0]
         self.pos_y = position[1]
+
+
+    def visualize(self, offsets: list) -> None:
+        """Print the piece in it's proper location, whether held or in the future.
+
+        Args:
+            offsets (list): The X_Y_OFFSETS variable from tetris.py
+        """
+        # List of the x and y coordinates of the top left of the positions.
+        positions = [
+            [0, 0],
+            [offsets[0] + 20 + 3, 2],
+            [offsets[0] + 20 + 3, 2 + 5],
+            [offsets[0] + 20 + 3, 2 + 10],
+            [2, 2]
+        ]
+
+        # Get the correct one based off of the piece's status
+        pos = positions[self.status][:]
+
+        self.shape = rotate_array(self.shape, -self.rotation)[:]
+        self.rotation = 0
+
+        # Black out whatever used to be there.
+        for i in range(4):
+            cursor.set_pos(pos[0] + 1, pos[1] + i + 1)
+            for _ in range(4):
+                text("██", mods=[color.BLACK], letter_time=0, end="", flush=False)
+
+        # Fill it back in.
+        for i in range(self.size):
+            # Modifies position based off of the size of the block.
+            cursor.set_pos(pos[0] + (5 - self.size), pos[1] + i + (5 - self.size))
+            for j in range(self.size):
+                if self.shape[i][j] == "##":
+                    text("██", mods=[self.color], letter_time=0, end="", flush=False)
+                else:
+                    text("██", mods=[color.BLACK], letter_time=0, end="", flush=False)
+
+        text("", end="", letter_time=0, flush=True)
+
+
+WALLKICK_TABLE = [
+
+    [[0, 0], [1, 0], [1, 1], [0, -2], [1, -2]], # 0>3 left
+    [[0, 0], [-1, 0], [-1, 1], [0, -2], [-1, -2]], # 0>1 right
+    [[0, 0], [1, 0], [1, -1], [0, 2], [1, 2]], # 1>0 left
+    [[0, 0], [1, 0], [1, 1], [0, -2], [1, -2]], # 1>2 right
+    [[0, 0], [-1, 0], [-1, -1], [0, 2], [-1, 2]], # 2>1 left
+    [[0, 0], [-1, 0], [-1, 1], [0, -2], [-1, -2]], # 2>3 right
+    [[0, 0], [1, 0], [1, -1], [0, 2], [1, 2]], # 3>2 left
+    [[0, 0], [-1, 0], [-1, -1], [0, 2], [-1, 2]] # 3>0 right
+]
+I_WALLKICK_TABLE = [
+    [[0, 0], [-1, 0], [2, 0], [-1, 2], [2, -1]], # 0>3 left
+    [[0, 0], [-2, 0], [1, 0], [-2, -1], [1, 2]], # 0>1 right
+    [[0, 0], [2, 0], [-1, 0], [2, 1], [-1, -2]], # 1>0 left
+    [[0, 0], [-1, 0], [2, 0], [-1, 2], [2, -1]], # 1>2 right
+    [[0, 0], [1, 0], [-2, 0], [1, -2], [-2, 1]], # 2>1 left
+    [[0, 0], [2, 0], [-1, 0], [2, 1], [-1, -2]], # 2>3 right
+    [[0, 0], [-2, 0], [1, 0], [-2, -1], [1, 2]], # 3>2 left
+    [[0, 0], [1, 0], [-2, 0], [1, -2], [-2, 1]], # 3>0 right
+]
+
+def wallkick_motion(original_rotation: int, direction: int, is_i: bool = False) -> list:
+    """Get the correct set of location tests for rotation.
+
+    Args:
+        original_rotation (int):
+            The rotation of the piece before the function was called (0-3)
+        direction (int):
+            The direction the piece is rotating (left: -1, right: +1)
+        is_i (bool, optional):
+            Added if the piece is the I tetromino because it has a different table.
+            Defaults to False.
+
+    Returns:
+        list: The list of possible positions to move to if the default fails.
+    """
+    rotation = (original_rotation * 2) + 1 + min(direction, 0)
+
+    if not is_i:
+        return WALLKICK_TABLE[rotation][:]
+    else:
+        return I_WALLKICK_TABLE[rotation][:]
