@@ -1,0 +1,7 @@
+left = A
+right = d
+hard_drop = w
+soft_drop = s
+rotate_left = j
+rotate_right = l
+store = i

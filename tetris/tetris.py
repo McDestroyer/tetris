@@ -555,7 +555,7 @@ def generate_frame():
          letter_time=0, flush=True, end="")
 
 
-def listener() -> list:
+def listener(ctrls: dict = get_controls()) -> list:
     """Find out which commands need to be run. Could be later modified to run these commands.
 
     Returns:
@@ -564,28 +564,28 @@ def listener() -> list:
     commands = []
 
     # Designed so if opposing commands are included, they will cancel out.
-    if keyboard_input.is_newly_pressed("a"):
+    if keyboard_input.is_newly_pressed(ctrls["left"]):
         commands.append("left")
-    if keyboard_input.is_newly_pressed("d"):
+    if keyboard_input.is_newly_pressed(ctrls["right"]):
         if "left" not in commands:
             commands.append("right")
         else:
             commands.remove("left")
 
-    if keyboard_input.is_currently_pressed("s"):
+    if keyboard_input.is_currently_pressed(ctrls["soft_drop"]):
         commands.append("soft_drop")
-    if keyboard_input.is_newly_pressed("w"):
+    if keyboard_input.is_newly_pressed(ctrls["hard_drop"]):
         commands.append("hard_drop")
 
-    if keyboard_input.is_newly_pressed("j"):
+    if keyboard_input.is_newly_pressed(ctrls["rotate_left"]):
         commands.append("rotate_left")
-    if keyboard_input.is_newly_pressed("l"):
+    if keyboard_input.is_newly_pressed(ctrls["rotate_right"]):
         if "rotate left" not in commands:
             commands.append("rotate_right")
         else:
             commands.remove("rotate_left")
 
-    if keyboard_input.is_newly_pressed("i"):
+    if keyboard_input.is_newly_pressed(ctrls["store"]):
         commands.append("store")
 
     return commands
@@ -812,33 +812,36 @@ def death_animation(grid: list, state: bool) -> None:
     sleep(.5)
     for i, row in enumerate(grid):
         for j, square in enumerate(row):
-            if square[0] == "██" and square[1] != color.BLACK:
+            if square[0] == "██" and square[1] != color.BLACK or square[0] == "##":
                 grid[i][j][1] = color.BRIGHT_BLACK
+            elif square[0] == "[]":
+                grid[i][j] = ["██", color.BLACK]
+ 
         update_screen_dynamically(grid, old_positions)
         sleep(.25)
 
     sleep(1)
 
     cursor.set_pos(4, 5)
-    text("██" * 20, letter_time=0, end="", mods=[color.WHITE])
+    text("██" * 22, letter_time=0, end="", mods=[color.WHITE])
     for i in range(17):
         cursor.set_pos(4, 6 + i)
         text("██" * 1, letter_time=0, end="", mods=[color.WHITE])
-        text("  " * 18, letter_time=0, end="")
+        text("  " * 20, letter_time=0, end="")
         text("██" * 1, letter_time=0, end="", mods=[color.WHITE])
     cursor.set_pos(4, 7 + i)
-    text("██" * 20, letter_time=0, end="", mods=[color.WHITE])
+    text("██" * 22, letter_time=0, end="", mods=[color.WHITE])
 
     y = 7
 
     cursor.set_pos(8, y)
     if state is False:
         died = "YOU LOST"
-        cursor.cursor_right(16 - int(len(died) / 2))
+        cursor.cursor_right(18 - int(len(died) / 2))
         text(died, end="", mods=[color.RED])
     else:
         won = "YOU WON!"
-        cursor.cursor_right(16 - int(len(won) / 2))
+        cursor.cursor_right(18 - int(len(won) / 2))
         text(won, end="", mods=[color.BRIGHT_GREEN])
 
     y += 2
@@ -905,6 +908,10 @@ def death_animation(grid: list, state: bool) -> None:
         text("Please enter your initials below:", mods=[color.CYAN])
         cursor.set_pos(8, y + 4 + num)
         initials = input(color.BRIGHT_BLUE).upper()
+
+        initials += "-" * max((3 - len(initials)), 0)
+        initials = initials[:3]
+
         top_score.add_score(initials, score, high_scores)
     else:
         text("Reload the game to play again!", end="", mods=[color.CYAN])

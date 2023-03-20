@@ -1,5 +1,0 @@
-1 AAA -1
-2 AAA -1
-3 AAA -1
-4 AAA -1
-5 AAA -1
