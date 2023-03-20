@@ -96,7 +96,8 @@ def solidify(grid: list, relevant) -> None:
     """
     for row in grid:
         for square in row:
-            square[0] = "██"
+            if square[0] != "[]":
+                square[0] = "██"
 
     for i in range(len(relevant) - 2):
         relevant[i] = relevant[i + 1]

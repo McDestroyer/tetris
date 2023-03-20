@@ -61,13 +61,17 @@ class Tetromino:
 
 
             if direction == "down":
+                # Loops bottom to top to avoid infinite loops.
                 for i in range(len(grid)-1, -1, -1):
                     for j in range(len(grid[0])):
+                        # If it's a falling block, move it to the next slot
+                        # and make the previous one empty.
                         if grid[i][j][0] == "##":
                             grid[i+1][j][0] = "##"
                             grid[i+1][j][1] = self.color
                             grid[i][j][0] = "██"
                             grid[i][j][1] = color.BLACK
+                # Tell the block where it is.
                 self.update_position([self.pos_x, self.pos_y + 1])
 
             elif direction == "left":
@@ -98,6 +102,18 @@ class Tetromino:
 
 
     def check_dir(self, grid: list, direction: str = "down") -> bool:
+        """Check to see if a block could move in the given direction.
+
+        Args:
+            grid (list):
+                The current positions of everything.
+            direction (str, optional):
+                The direction to check.
+                Defaults to "down".
+
+        Returns:
+            bool: True if it can move. Otherwise, False.
+        """
         if direction == "down":
             # Loop rows
             for i, row in enumerate(grid):
@@ -108,7 +124,7 @@ class Tetromino:
                         # If the current pos is falling
                         if square[0] == "##":
                             # If the next square down is not empty
-                            if (not grid[i+1][j][0] == "##" and
+                            if (grid[i+1][j][0] == "██" and
                                 not grid[i+1][j][1] == color.BLACK):
                                 # Fail.
                                 return False
@@ -125,7 +141,7 @@ class Tetromino:
                 for j, square in enumerate(row):
                     if j > 0:
                         if square[0] == "##":
-                            if grid[i][j-1][0] == "##" or grid[i][j-1][1] == color.BLACK:
+                            if grid[i][j-1][0] in ("##", "[]") or grid[i][j-1][1] == color.BLACK:
                                 pass
                             else:
                                 return False
@@ -137,7 +153,7 @@ class Tetromino:
                 for j, square in enumerate(row):
                     if j < len(row)-1:
                         if square[0] == "##":
-                            if grid[i][j+1][0] == "##" or grid[i][j+1][1] == color.BLACK:
+                            if grid[i][j+1][0] in ("##", "[]") or grid[i][j+1][1] == color.BLACK:
                                 pass
                             else:
                                 return False
@@ -186,10 +202,10 @@ class Tetromino:
         rotated_piece = rotate_array(self.shape, direction)
 
         # Check where it will fit.
-        for x, y in wallkick_motion(self.rotation, direction,
+        for x_offset, y_offset in wallkick_motion(self.rotation, direction,
                                     self.color == color.rgb_hex("00", "ff", "ff")):
-            mod_x = self.pos_x + x
-            mod_y = self.pos_y + -y
+            mod_x = self.pos_x + x_offset
+            mod_y = self.pos_y + -y_offset
 
             fail = False
             succeed = False
@@ -201,7 +217,7 @@ class Tetromino:
                     if rotated_piece[i - mod_y][j - mod_x] == "##":
                         if 0 <= j < 10:
                             # If it would hit something, fail. Otherwise, continue.
-                            if grid[i][j][1] != color.BLACK and grid[i][j][0] != "##":
+                            if grid[i][j][1] != color.BLACK and not grid[i][j][0] in ("##", "[]"):
                                 fail = True
                         else:
                             fail = True
@@ -258,7 +274,13 @@ class Tetromino:
         self.pos_y = position[1]
 
 
-    def visualize(self, offsets: list):
+    def visualize(self, offsets: list) -> None:
+        """Print the piece in it's proper location, whether held or in the future.
+
+        Args:
+            offsets (list): The X_Y_OFFSETS variable from tetris.py
+        """
+        # List of the x and y coordinates of the top left of the positions.
         positions = [
             [0, 0],
             [offsets[0] + 20 + 3, 2],
@@ -267,40 +289,40 @@ class Tetromino:
             [2, 2]
         ]
 
+        # Get the correct one based off of the piece's status
         pos = positions[self.status][:]
 
+        self.shape = rotate_array(self.shape, -self.rotation)[:]
+        self.rotation = 0
+
+        # Black out whatever used to be there.
         for i in range(4):
             cursor.set_pos(pos[0] + 1, pos[1] + i + 1)
             for _ in range(4):
                 text("██", mods=[color.BLACK], letter_time=0, end="", flush=False)
 
+        # Fill it back in.
         for i in range(self.size):
-            cursor.set_pos(pos[0] + 1, pos[1] + i + 1)
+            # Modifies position based off of the size of the block.
+            cursor.set_pos(pos[0] + (5 - self.size), pos[1] + i + (5 - self.size))
             for j in range(self.size):
                 if self.shape[i][j] == "##":
                     text("██", mods=[self.color], letter_time=0, end="", flush=False)
                 else:
                     text("██", mods=[color.BLACK], letter_time=0, end="", flush=False)
-        
+
         text("", end="", letter_time=0, flush=True)
 
 
 WALLKICK_TABLE = [
 
     [[0, 0], [1, 0], [1, 1], [0, -2], [1, -2]], # 0>3 left
-
     [[0, 0], [-1, 0], [-1, 1], [0, -2], [-1, -2]], # 0>1 right
-
     [[0, 0], [1, 0], [1, -1], [0, 2], [1, 2]], # 1>0 left
-
     [[0, 0], [1, 0], [1, 1], [0, -2], [1, -2]], # 1>2 right
-
     [[0, 0], [-1, 0], [-1, -1], [0, 2], [-1, 2]], # 2>1 left
-
     [[0, 0], [-1, 0], [-1, 1], [0, -2], [-1, -2]], # 2>3 right
-
     [[0, 0], [1, 0], [1, -1], [0, 2], [1, 2]], # 3>2 left
-
     [[0, 0], [-1, 0], [-1, -1], [0, 2], [-1, 2]] # 3>0 right
 ]
 I_WALLKICK_TABLE = [
@@ -315,7 +337,20 @@ I_WALLKICK_TABLE = [
 ]
 
 def wallkick_motion(original_rotation: int, direction: int, is_i: bool = False) -> list:
+    """Get the correct set of location tests for rotation.
 
+    Args:
+        original_rotation (int):
+            The rotation of the piece before the function was called (0-3)
+        direction (int):
+            The direction the piece is rotating (left: -1, right: +1)
+        is_i (bool, optional):
+            Added if the piece is the I tetromino because it has a different table.
+            Defaults to False.
+
+    Returns:
+        list: The list of possible positions to move to if the default fails.
+    """
     rotation = (original_rotation * 2) + 1 + min(direction, 0)
 
     if not is_i:

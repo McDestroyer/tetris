@@ -244,8 +244,11 @@ def play():
         loop = 0
         if not relevant_blocks[0].move(current_positions, "down"):
             solidify(current_positions, relevant_blocks)
+
             relevant_blocks[0].move_to(current_positions, [3, 2])
+
             relevant_blocks[-2] = Tetromino(rand_choice(blocks), [2, 3])
+
             relevant_blocks[1].visualize(X_Y_OFFSET)
             relevant_blocks[2].visualize(X_Y_OFFSET)
             relevant_blocks[3].visualize(X_Y_OFFSET)
@@ -257,6 +260,8 @@ def play():
         # Check if dead
 
         # Also maybe local multiplayer if I get really bored and we finish too early.
+
+    update_ghost(current_positions, relevant_blocks[0])
 
     if current_positions != old_positions:
         update_screen_dynamically(current_positions, old_positions)
@@ -549,25 +554,85 @@ def listener() -> list:
 
 
 def update_ghost(grid: list, block: Tetromino) -> None:
+    """Create a ghostly image of the falling block and update its position.
 
+    Args:
+        grid (list):
+            The current positions of everything.
+        block (Tetromino):
+            The block to make a ghost of.
+    """
+
+    # Clear the previous ghost.
     for i, row in enumerate(grid):
         for j, square in enumerate(row):
             if square[0] == "[]":
-                square = ["██", color.BLACK]
+                grid[i][j] = ["██", color.BLACK]
 
+    # Feel out distances and find the shortest.
+    distance = 25
     for i, row in enumerate(grid):
         for j, square in enumerate(row):
             if square[0] == "##":
-                ghost_fall(grid, i, j)
+                distance = min(ghost_dist_find(grid, i, j), distance)
+
+    # Spawn a new piece of one wherever there's a falling block.
+    for i, row in enumerate(grid):
+        for j, square in enumerate(row):
+            if square[0] == "##":
+                ghost_fall(grid, i, j, block.color, distance)
 
 
-def ghost_fall(grid: str, start_y: int, x_pos: int):
-    
-    for i in range(start_y, 0, -1):
-        if (grid[i - 1][x_pos][0] == "[]" or
-            (grid[i - 1][x_pos][1] != color.BLACK and
-             grid[i - 1][x_pos][0] != "##")):
-            
+def ghost_dist_find(grid: list, start_y: int, x_pos: int) -> int:
+    """Find the distance the ghost piece can fall.
+
+    Args:
+        grid (list):
+            The current positions of everything.
+        start_y (int):
+            The height of the piece of block being checked.
+        x_pos (int):
+            The x-axis to check on.
+
+    Returns:
+        int: The distance the piece could fall.
+    """
+    dist = 0
+    if not start_y == len(grid) - 1:
+        for i in range(start_y, len(grid) - 1):
+            # If the blelow square is [] or neither black nor ## (A solid block),
+            # that's how far this one can go, so return it.
+            if (grid[i + 1][x_pos][0] == "[]" or
+                (grid[i + 1][x_pos][1] != color.BLACK and
+                grid[i + 1][x_pos][0] != "##")):
+                return dist
+            dist += 1
+    # If it doesn't find anything, put it on the floor.
+    return len(grid) - 1 - start_y
+
+
+def ghost_fall(grid: list, start_y: int, x_pos: int, ghost_color: str, dist: int):
+    """Make the ghost block fall until it lands on something.
+
+    Args:
+        grid (list):
+            The current positions of everything.
+        start_y (int):
+            The height of the piece of block being checked.
+        x_pos (int):
+            The x-axis to check on.
+        ghost_color (str):
+            The color of the block.
+        dist (int):
+            The distance down to move.
+
+    Returns:
+        int: The distance down moved.
+    """
+    if not start_y == len(grid) - 1:
+
+        if grid[start_y + dist][x_pos][0] != "##":
+            grid[start_y + dist][x_pos] = ["[]", ghost_color]
 
 
 def update_screen_dynamically(current_pos: list, old_pos: list) -> None:
@@ -587,7 +652,10 @@ def update_screen_dynamically(current_pos: list, old_pos: list) -> None:
 
             for j, square in enumerate(row):
                 if square != old_pos[i][j]:
-                    text("██", mods=[square[1]], letter_time=0, end="")
+                    if square[0] == "[]":
+                        text("[]", mods=[square[1], color.BACKGROUND_BLACK], letter_time=0, end="")
+                    else:
+                        text("██", mods=[square[1]], letter_time=0, end="")
                     old_pos[i][j] = square[:]
                 else:
                     cursor.cursor_right(2)
