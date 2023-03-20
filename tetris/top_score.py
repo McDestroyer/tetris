@@ -25,23 +25,26 @@ I intend to make a code that tries to check for existing scores and store new on
 import sys
 import os
 
-current = os.path.dirname(os.path.realpath(__file__))
+parent = os.path.dirname(os.path.realpath(__file__))
 
-while not "utilities" in os.listdir(current):
-    current = os.path.dirname(current)
-sys.path.append(os.path.join(current, "utilities"))
+while not "utilities" in os.listdir(parent):
+    parent = os.path.dirname(parent)
+sys.path.append(os.path.join(parent, "utilities"))
 
 import color
 from personal_functions import *
 
 
 def get_scores() -> list:
+    """Get the previous high scores.
 
-    current = os.path.dirname(os.path.realpath(__file__))
+    Returns:
+        list: The high scores.
+    """
     path_exist = True
     # If a score file exists we'll go into sorting scores, otherwise skip it.
     try:
-        read_scores = open(f"{current}/score.txt", "r", encoding="UTF-8")
+        read_scores = open(f"{parent}/data/score.txt", "r", encoding="UTF-8")
     except FileNotFoundError:
         path_exist = False
 
@@ -65,6 +68,16 @@ def get_scores() -> list:
 
 
 def add_score(name: str, score: int, scorage: list) -> None:
+    """Add a score to the high scores and cull the lowest before saving them again.
+
+    Args:
+        name (str):
+            The player's initials.
+        score (int):
+            The new score.
+        scorage (list):
+            The previous scores.
+    """
 
     init = name
     scorio = score
@@ -99,7 +112,7 @@ def add_score(name: str, score: int, scorage: list) -> None:
     while len(scorage) > 5:
         scorage.remove(scorage[-1])
 
-    write_scores =  open(f"{current}/score.txt", "w", encoding="UTF-8")
+    write_scores =  open(f"{parent}/data/score.txt", "w", encoding="UTF-8")
     for i, _ in enumerate(scorage):
         # Setting a line to the first element in list.
         liney = scorage[i]

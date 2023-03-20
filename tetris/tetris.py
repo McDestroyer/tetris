@@ -60,9 +60,11 @@ FRAME_SIDE_MATERIAL = "|"
 X_Y_OFFSET = (len(FRAME_SIDE_MATERIAL) * 2 + 8 + 3, 1) # (2 for each block [4], frames, and spaces)
 
 # Scores, levels, and life. Only life is implemented as of yet.
+global score
 score = 0
-high_scores = ["Name", "Score"]
+global level
 level = 1
+global lines
 lines = 0
 dead = False
 
@@ -155,6 +157,24 @@ relevant_blocks = []
 
 
 
+def clear_lines (grid: list) -> int:
+    cleared_lines=0
+    for i, row in enumerate(grid):
+        clear = True
+        for _, square in enumerate(row):
+            if square[0] in ("##", "[]"):
+                clear = False
+
+        if (not ["██", color.BLACK] in row) and clear:
+            empty_line = [["██", color.BLACK] for _ in enumerate(row)]
+            grid.remove(row)
+            cleared_lines += 1
+            grid.insert(0, empty_line)
+
+    return cleared_lines
+
+
+
 def _main() -> None:
     """Main"""
     initialize()
@@ -176,13 +196,6 @@ def play():
 
     # Gets keyboard commands and sends the summary of the actions requested to a list.
     commands = listener()
-    # print(commands)
-
-
-    # To be added:
-        # Check inputs and decide what needs to be done (keyboard listener WIP)
-        # Move blocks
-
 
     if "rotate_right" in commands:
         if not relevant_blocks[0].check_dir(current_positions):
@@ -252,8 +265,6 @@ def play():
             relevant_blocks[1].visualize(X_Y_OFFSET)
             relevant_blocks[2].visualize(X_Y_OFFSET)
             relevant_blocks[3].visualize(X_Y_OFFSET)
-            # First rotate and move, then apply gravity
-            # Apply wallkick rules when applicable
         # Clear lines and give points
             # Add code for combos too
         # Check if leveled up
@@ -262,6 +273,17 @@ def play():
         # Also maybe local multiplayer if I get really bored and we finish too early.
 
     update_ghost(current_positions, relevant_blocks[0])
+    update_score()
+    update_level()
+    update_lines()
+    global score
+    score += 1
+    global lines
+    lines = score / 2
+    global level
+    level -= 1
+
+    clear_lines(current_positions)
 
     if current_positions != old_positions:
         update_screen_dynamically(current_positions, old_positions)
@@ -633,6 +655,43 @@ def ghost_fall(grid: list, start_y: int, x_pos: int, ghost_color: str, dist: int
 
         if grid[start_y + dist][x_pos][0] != "##":
             grid[start_y + dist][x_pos] = ["[]", ghost_color]
+
+
+def update_score():
+
+    y = X_Y_OFFSET[1] + 5
+    cursor.set_pos(0, y + 2)
+    val_len = len(str(score))
+
+    text(FRAME_SIDE_MATERIAL, letter_time=0, flush=False, end=" ")
+
+    text(" " * int(4 - val_len / 2), letter_time=0, flush=False, end="")
+    text(score, letter_time=0, flush=True, end="")
+
+
+def update_level():
+
+    y = X_Y_OFFSET[1] + 5 + 2
+    cursor.set_pos(0, y + 2)
+    val_len = len(str(level))
+
+    text(FRAME_SIDE_MATERIAL, letter_time=0, flush=False, end=" ")
+
+    text(" " * int(4 - val_len / 2), letter_time=0, flush=False, end="")
+    text(level, letter_time=0, flush=True, end="")
+
+
+def update_lines():
+
+    y = X_Y_OFFSET[1] + 5 + 2 + 2
+    cursor.set_pos(0, y + 2)
+    val_len = len(str(lines))
+
+    text(FRAME_SIDE_MATERIAL, letter_time=0, flush=False, end=" ")
+
+    text(" " * int(4 - val_len / 2), letter_time=0, flush=False, end="")
+    text(lines, letter_time=0, flush=True, end="")
+
 
 
 def update_screen_dynamically(current_pos: list, old_pos: list) -> None:
