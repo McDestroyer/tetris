@@ -19,6 +19,7 @@ Desc: A generic function containing my default functions.
 # pylint: disable=invalid-name
 # pylint: disable=global-statement
 # pylint: disable=global-at-module-level
+# pylint: disable=dangerous-default-value
 
 
 # This is an importer I made for all of my programs going forward so I wouldn't have to deal with
@@ -816,7 +817,7 @@ def death_animation(grid: list, state: bool) -> None:
                 grid[i][j][1] = color.BRIGHT_BLACK
             elif square[0] == "[]":
                 grid[i][j] = ["██", color.BLACK]
- 
+
         update_screen_dynamically(grid, old_positions)
         sleep(.25)
 
