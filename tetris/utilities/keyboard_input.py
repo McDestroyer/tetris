@@ -4,6 +4,7 @@
 # pylint: disable=import-error
 
 import os
+import time
 import pkg_resources
 
 # Checks to see if the dependency is installed. If not, installs it.
@@ -89,5 +90,16 @@ def is_currently_pressed(key: str, function: callable or None = None) -> bool:
     return keys[key]
 
 
-def simulate(key: str):
+def simulate(key: str, delay: int | None = None):
+    """Simulate a keypress or keypresses after a certain amount of time.
+
+    Args:
+        key (str):
+            The key(s) to simulate separated by a +.
+        delay (int | None, optional):
+            The time to wait before simulating the key(s).
+            Defaults to None.
+    """
+    if not delay is None:
+        time.sleep(delay)
     keyboard.send(key)

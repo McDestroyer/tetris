@@ -25,8 +25,10 @@ Desc: A generic function containing my default functions.
 # This is an importer I made for all of my programs going forward so I wouldn't have to deal with
 # creating and renaming the personal_functions.py and universal_colors.py for every program.
 # Probably adds unnecessary bulk here, but I don't care enough to make it reliable without it.
+import subprocess
 import sys
 import os
+import threading
 import time
 
 try:
@@ -314,7 +316,10 @@ def play():
 def initialize():
     """Set up the screen and variables."""
 
-    loading_screen()
+    try:
+        sys.argv[1]
+    except IndexError:
+        loading_screen()
 
     cursor.hide()
 
@@ -892,11 +897,14 @@ def death_animation(grid: list, state: bool) -> None:
 
     y += 2
     cursor.set_pos(8, y)
-    text("Please Hit Enter...", end="", mods=[color.CYAN])
+    # text("Please Hit Enter...", end="", mods=[color.CYAN])
+
+    thread = threading.Thread(target=keybd.simulate, args=("enter", .02))
+    thread.start()
 
     cursor.set_pos(0, 25)
     st = time.monotonic_ns()
-    while time.monotonic_ns() < st + 100_000_000:
+    while time.monotonic_ns() < st + 10_000_000:
         input()
         cursor.cursor_up()
 
@@ -914,12 +922,21 @@ def death_animation(grid: list, state: bool) -> None:
         initials = initials[:3]
 
         top_score.add_score(initials, score, high_scores)
-    else:
-        text("Reload the game to play again!", end="", mods=[color.CYAN])
+
+    cursor.set_pos(8, y)
+    text(" " * 36, end="")
+    cursor.set_pos(8, y)
+    text("Hit enter to play again!", end="", mods=[color.CYAN])
 
     cursor.set_pos(0, 25)
-    sys.exit()
+    input()
 
+    python = sys.executable
+
+    args = [python, "tetris.py", "false"]
+
+    # os.execl(python, python, *arg)
+    subprocess.call(args)
 
 
 if __name__ == "__main__":
@@ -931,11 +948,14 @@ if __name__ == "__main__":
         _main()
     # :P
     except KeyboardInterrupt:
+
+        # Pretty self-explanitory...
         audio.stop_music()
 
         # The 2nd try/except clears all formatting without wasting time
         # so you don't have to wait for it to scroll out.
         try:
+            cursor.set_pos()
             text("CTRL + C?! You're killing me!!! Aww, fine... Bye!", mods=[color.ERROR])
             sys.exit()
         except KeyboardInterrupt:

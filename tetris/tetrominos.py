@@ -216,8 +216,12 @@ class Tetromino:
                     # If part of the piece would be here:
                     if rotated_piece[i - mod_y][j - mod_x] == "##":
                         if 0 <= j < 10:
-                            # If it would hit something, fail. Otherwise, continue.
-                            if grid[i][j][1] != color.BLACK and not grid[i][j][0] in ("##", "[]"):
+                            try:
+                                # If it would hit something, fail. Otherwise, continue.
+                                if (grid[i][j][1] != color.BLACK and
+                                    not grid[i][j][0] in ("##", "[]")):
+                                    fail = True
+                            except IndexError:
                                 fail = True
                         else:
                             fail = True
