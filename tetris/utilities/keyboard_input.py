@@ -50,7 +50,7 @@ def is_newly_pressed(key: str, function: callable or None = None,
     # If the current and previous values are the same, set the result to False.
     if key in keys:
         if keyboard.is_pressed(key) and keys[key] is False:
-            keys[key] = True
+            keys[key] = [True, time.monotonic()]
             result = True
         elif keyboard.is_pressed(key) and keys[key] is True:
             pass
@@ -61,7 +61,7 @@ def is_newly_pressed(key: str, function: callable or None = None,
     # to whether or not it's currently pressed.
     else:
         if keyboard.is_pressed(key):
-            keys[key] = True
+            keys[key] = [True, time.monotonic()]
             result = True
         else:
             keys[key] = False
@@ -74,6 +74,44 @@ def is_newly_pressed(key: str, function: callable or None = None,
             function()
 
     return result
+
+
+def is_long_pressed(key: str, function: callable or None = None,
+                     args: list | None = None, initial: bool = True,
+                     time_delay: float = .2) -> bool:
+    """Detect if a key is pressed and return True if
+    it wasn't pressed the last time this function was called
+    or if it has been (time_delay) seconds since the last call.
+    Designed to be run every frame.
+
+    Args:
+        key (str): 
+             key to check the newness of the compression thereof.
+        function (str, optional): 
+             The function to execute if the key is newly pressed.
+        args (list | None, optional):
+            The arguments to pass to the function if given.
+            Defaults to None.
+        initial (bool, optional):
+            Determines if it returns true when the key was just pressed.
+            Defaults to True.
+        time_delay (float, optional):
+            The amount of time in seconds required to pass before it returns True.
+            Defaults to .2.
+
+    Returns:
+        bool: True if the conditions are met. Otherwise, False.
+    """
+
+    if is_newly_pressed(key, function, args) and initial:
+        return True
+
+    if is_currently_pressed(key):
+        if keys[key][1] + time_delay <= time.monotonic():
+            return True
+        return False
+
+    return False
 
 def is_currently_pressed(key: str, function: callable or None = None,
                          args: list | None = None) -> bool:

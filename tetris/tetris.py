@@ -570,9 +570,9 @@ def listener(ctrls: dict = get_controls()) -> list:
     commands = []
 
     # Designed so if opposing commands are included, they will cancel out.
-    if keyboard_input.is_newly_pressed(ctrls["left"]):
+    if keyboard_input.is_long_pressed(ctrls["left"]):
         commands.append("left")
-    if keyboard_input.is_newly_pressed(ctrls["right"]):
+    if keyboard_input.is_long_pressed(ctrls["right"]):
         if "left" not in commands:
             commands.append("right")
         else:
@@ -580,18 +580,18 @@ def listener(ctrls: dict = get_controls()) -> list:
 
     if keyboard_input.is_currently_pressed(ctrls["soft_drop"]):
         commands.append("soft_drop")
-    if keyboard_input.is_newly_pressed(ctrls["hard_drop"]):
+    if keyboard_input.is_long_pressed(ctrls["hard_drop"]):
         commands.append("hard_drop")
 
-    if keyboard_input.is_newly_pressed(ctrls["rotate_left"]):
+    if keyboard_input.is_long_pressed(ctrls["rotate_left"]):
         commands.append("rotate_left")
-    if keyboard_input.is_newly_pressed(ctrls["rotate_right"]):
+    if keyboard_input.is_long_pressed(ctrls["rotate_right"]):
         if "rotate left" not in commands:
             commands.append("rotate_right")
         else:
             commands.remove("rotate_left")
 
-    if keyboard_input.is_newly_pressed(ctrls["store"]):
+    if keyboard_input.is_long_pressed(ctrls["store"]):
         commands.append("store")
 
     return commands
