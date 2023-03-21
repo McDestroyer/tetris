@@ -134,6 +134,8 @@ def get_controls() -> dict:
 
     for line in lines:
         control = line.split("=")
+        if control[0].startswith("#"):
+            return control_map
         control_map[control[0].strip()] = control[1].strip().lower()
 
     return control_map
