@@ -7,16 +7,18 @@ Things to do (not necessarily in order):
 	Movement controls -- Done
 	Rotation controls -- Done
 	"Wall kicks" (moving to the side because of a rotation) -- Done
-	Scores
 	Gameplay frame -- Done
 	Block storage -- Done
-	Death
-	line clearing
-	levels
+	Death -- Done
+	Line clearing -- Done
+	Levels -- Done
+	Ghost block -- Done
+	Controls settings -- Done
+	
+	Scores
+	Better controls (holding moves stuff)
+	Pausing
 	
 Bonus options ("if we have time" features):
 
 	Multiplayer
-	
-Append a line with " -- (your name)" if you want to take that project.
-Add more any time you want.

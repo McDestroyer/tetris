@@ -665,9 +665,9 @@ def listener(ctrls: dict = get_controls()) -> list:
     commands = []
 
     # Designed so if opposing commands are included, they will cancel out.
-    if keyboard_input.is_newly_pressed(ctrls["left"]):
+    if keyboard_input.is_long_pressed(ctrls["left"], speed = 3):
         commands.append("left")
-    if keyboard_input.is_newly_pressed(ctrls["right"]):
+    if keyboard_input.is_long_pressed(ctrls["right"], speed = 3):
         if "left" not in commands:
             commands.append("right")
         else:
