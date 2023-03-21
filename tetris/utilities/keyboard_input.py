@@ -23,7 +23,8 @@ import keyboard
 keys = {}
 
 
-def is_newly_pressed(key: str, function: callable or None = None) -> bool:
+def is_newly_pressed(key: str, function: callable or None = None,
+                     args: list | None = None) -> bool:
     """Detect if a key is pressed and return True if
     it wasn't pressed the last time this function was called.
     Designed to be run every frame.
@@ -33,6 +34,9 @@ def is_newly_pressed(key: str, function: callable or None = None) -> bool:
              key to check the newness of the compression thereof.
         function (str, optional): 
              The function to execute if the key is newly pressed.
+        args (list | None, optional):
+            The arguments to pass to the function if given.
+            Defaults to None.
 
     Returns:
         bool: True if the key is pressed but was not pressed during the previous call.
@@ -64,17 +68,24 @@ def is_newly_pressed(key: str, function: callable or None = None) -> bool:
 
     # If a function is provided and the result was True, run the function.
     if result and function is not None:
-        function()
+        if not args is None:
+            function(*args)
+        else:
+            function()
 
     return result
 
-def is_currently_pressed(key: str, function: callable or None = None) -> bool:
+def is_currently_pressed(key: str, function: callable or None = None,
+                         args: list | None = None) -> bool:
     """Check to see if a key is currently pressed.
 
     Args:
         key (str): The key to check.
         function (callable | None, optional):
             The function to call if the key is pressed.
+            Defaults to None.
+        args (list | None, optional):
+            The arguments to pass to the function if given.
             Defaults to None.
 
     Returns:
@@ -85,7 +96,10 @@ def is_currently_pressed(key: str, function: callable or None = None) -> bool:
 
     # Run if true
     if function is not None and keys[key] is True:
-        function()
+        if not args is None:
+            function(*args)
+        else:
+            function()
 
     return keys[key]
 

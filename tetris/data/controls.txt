@@ -5,3 +5,56 @@ soft_drop = s
 rotate_left = j
 rotate_right = l
 store = i
+#
+Instructions:
+
+Modify the above keys as much as you wish.
+Capitalization does not matter, everything is converted to lower anyway.
+
+Example buttons:
+
+space
+w
+a
+s
+d
+shift
+enter
+ctrl
+up      #(arrow key)
+down    #(arrow key)
+left    #(arrow key)
+right   #(arrow key)
+1
+2
+3
+4
+5
+numpad 1
+numpad 2
+numpad 3
+numpad 4
+numpad 5
+[
+]
+\
+/
+,
+.
+-
+=
+end
+esc
+f1
+f4
+f10
+f12
+
+Combinations of keys are also possible as shown below:
+
+shift+enter
+ctrl+shift+s
+ctrl+alt+delete
+alt+f4
+
+It can NOT, however, reliably detect the power button, unfortunately...
