@@ -25,6 +25,7 @@ Desc: A generic function containing my default functions.
 # This is an importer I made for all of my programs going forward so I wouldn't have to deal with
 # creating and renaming the personal_functions.py and universal_colors.py for every program.
 # Probably adds unnecessary bulk here, but I don't care enough to make it reliable without it.
+import string
 import subprocess
 import sys
 import os
@@ -63,15 +64,24 @@ FRAME_TOP_MATERIAL = "-"
 FRAME_SIDE_MATERIAL = "|"
 X_Y_OFFSET = (len(FRAME_SIDE_MATERIAL) * 2 + 8 + 3, 1) # (2 for each block [4], frames, and spaces)
 
-# Scores, levels, and life. Only life is implemented as of yet.
+# Scores, levels, and life.
 global score
 score = 0
+global combo
+combo = 0
+global difficult_combo
+difficult_combo = -1
+global tspin
+tspin = 0
+
 global level
 level = 1
 global level_goal
 level_goal = 5
+
 global lines
 lines = 0
+
 dead = False
 
 # The delta time (how long each frame should take)
@@ -172,7 +182,7 @@ def clear_lines (grid: list) -> int:
     Returns:
         int: The number of lines cleared.
     """
-    cleared_lines=0
+    cleared_lines = 0
     for _, row in enumerate(grid):
         can_clear = True
         for _, square in enumerate(row):
@@ -182,8 +192,8 @@ def clear_lines (grid: list) -> int:
         if (not ["██", color.BLACK] in row) and can_clear:
             empty_line = [["██", color.BLACK] for _ in enumerate(row)]
             grid.remove(row)
-            cleared_lines += 1
             grid.insert(0, empty_line)
+            cleared_lines += 1
 
     return cleared_lines
 
@@ -201,36 +211,42 @@ def play():
     """Run the game."""
     start_time = time.monotonic_ns()
     global loop
-
-    # Prints all blocks in all rotations as a test. It works.
-    # Left it as a visual representation of action occuring.
-    # for b in blocks:
-    #     for i in range(4):
-    #         print_block(rotate(b, i))
+    global score
+    global tspin
 
     # Gets keyboard commands and sends the summary of the actions requested to a list.
     commands = listener()
-
     if "rotate_right" in commands:
         if not relevant_blocks[0].check_dir(current_positions):
             loop = 0
-        relevant_blocks[0].rotate(current_positions, 1)
+        spin, rotated = relevant_blocks[0].rotate(current_positions, 1)
+        if rotated:
+            tspin = spin
     elif "rotate_left" in commands:
         if not relevant_blocks[0].check_dir(current_positions):
             loop = 0
-        relevant_blocks[0].rotate(current_positions, -1)
+        spin, rotated = relevant_blocks[0].rotate(current_positions, -1)
+        if rotated:
+            tspin = spin
 
     if "right" in commands:
-        relevant_blocks[0].move(current_positions, "right")
+        _, move = relevant_blocks[0].move(current_positions, "right")
+        if move:
+            tspin = 0
         if not relevant_blocks[0].check_dir(current_positions):
             loop = 0
     elif "left" in commands:
-        relevant_blocks[0].move(current_positions, "left")
+        _, move = relevant_blocks[0].move(current_positions, "left")
+        if move:
+            tspin = 0
         if not relevant_blocks[0].check_dir(current_positions):
             loop = 0
 
     if "hard_drop" in commands:
-        relevant_blocks[0].move(current_positions, "down", True)
+        distance, _ = relevant_blocks[0].move(current_positions, "down", True)
+        score += distance * 2
+        if distance > 0:
+            tspin = 0
         solidify(current_positions, relevant_blocks)
         relevant_blocks[0].move_to(current_positions, [3, 2])
         relevant_blocks[-2] = Tetromino(rand_choice(blocks), [2, 3])
@@ -239,7 +255,10 @@ def play():
         relevant_blocks[3].visualize(X_Y_OFFSET)
     if "soft_drop" in commands:
         if loop >= 2:
-            if relevant_blocks[0].move(current_positions, "down"):
+            _, success = relevant_blocks[0].move(current_positions, "down")
+            if success:
+                tspin = 0
+                score += 1
                 loop = 0
 
     if "store" in commands:
@@ -247,6 +266,8 @@ def play():
         if not relevant_blocks[0].was_held:
 
             clear(current_positions)
+
+            tspin = 0
 
             relevant_blocks[-1], relevant_blocks[0] = relevant_blocks[0], relevant_blocks[-1]
             relevant_blocks[-1].was_held = True
@@ -269,7 +290,8 @@ def play():
     # Gravity
     if loop >= g_loop:
         loop = 0
-        if not relevant_blocks[0].move(current_positions, "down"):
+        _, fell = relevant_blocks[0].move(current_positions, "down")
+        if not fell:
             solidify(current_positions, relevant_blocks)
 
             relevant_blocks[0].move_to(current_positions, [3, 2])
@@ -279,28 +301,101 @@ def play():
             relevant_blocks[1].visualize(X_Y_OFFSET)
             relevant_blocks[2].visualize(X_Y_OFFSET)
             relevant_blocks[3].visualize(X_Y_OFFSET)
-        # Clear lines and give points
-            # Add code for combos too
-        # Check if leveled up
-        # Check if dead
+        else:
+            tspin = 0
 
         # Also maybe local multiplayer if I get really bored and we finish too early.
 
     update_ghost(current_positions, relevant_blocks[0])
 
+    global lines
+    global difficult_combo
+    global combo
+
+    cleared_lines = clear_lines(current_positions)
+    lines += cleared_lines
+
+    if cleared_lines == 1:
+        score += 100 * level * (1.5 if difficult_combo >= 1 and tspin != 0 else 1)
+
+        if tspin != 0:
+            if tspin == 1:
+                score += 200 * level * (1.5 if difficult_combo >= 1 else 1)
+                difficult_combo += 1
+            elif tspin == 2:
+                score += 800 * level * (1.5 if difficult_combo >= 1 else 1)
+                difficult_combo += 1
+        else:
+            difficult_combo = -1
+
+        if is_clear(current_positions):
+            score += 800 * level
+
+        combo += 1
+        score += 50 * combo * level
+
+    elif cleared_lines == 2:
+        score += 300 * level * (1.5 if difficult_combo >= 1 and tspin != 0 else 1)
+
+        if tspin != 0:
+            if tspin == 1:
+                score += 400 * level * (1.5 if difficult_combo >= 1 else 1)
+                difficult_combo += 1
+            elif tspin == 2:
+                score += 1200 * level * (1.5 if difficult_combo >= 1 else 1)
+                difficult_combo += 1
+        else:
+            difficult_combo = -1
+
+        if is_clear(current_positions):
+            score += 1200 * level
+
+        combo += 1
+        score += 50 * combo * level
+
+    elif cleared_lines == 3:
+        score += 500 * level * (1.5 if difficult_combo >= 1 and tspin != 0 else 1)
+
+        if tspin != 0:
+            if tspin == 2:
+                score += 1600 * level * (1.5 if difficult_combo >= 1 else 1)
+                difficult_combo += 1
+        else:
+            difficult_combo = -1
+
+        if is_clear(current_positions):
+            score += 1800 * level
+
+        combo += 1
+        score += 50 * combo * level
+
+    elif cleared_lines == 4:
+        score += 800 * level * (1.5 if difficult_combo >= 1 else 1)
+        difficult_combo += 1
+        combo += 1
+        score += 50 * combo * level
+
+        if is_clear(current_positions):
+            score += 2000 * level * (1.6 if difficult_combo >= 1 else 1)
+
+    else:
+        combo = -1
+
+        if tspin == 1:
+            score += 100 * level
+        elif tspin == 2:
+            score += 400 * level
+
     level_up()
+
+    score = int(score)
 
     update_score()
     update_level()
     update_lines(level_goal)
 
-    global lines
-
-    lines += clear_lines(current_positions)
-
     if current_positions != old_positions:
         update_screen_dynamically(current_positions, old_positions)
-
 
     if check_death(current_positions):
         death_animation(current_positions, False)
@@ -742,6 +837,23 @@ def level_up():
         g_loop = rounder(g_time * (1 / delta_seconds))
 
 
+def is_clear(grid: list) -> bool:
+    """Check to see if the screen has been fully cleared.
+
+    Args:
+        grid (list):
+            The current positions of everything.
+
+    Returns:
+        bool: True if the screen is empty. False otherwise.
+    """
+    for _, row in enumerate(grid):
+        for _, square in enumerate(row):
+            if square[0] == "██" and square[1] != color.BLACK:
+                return False
+    return True
+
+
 def check_death(grid: list) -> bool:
     """Check to see if you are dead.
 
@@ -828,19 +940,20 @@ def death_animation(grid: list, state: bool) -> None:
 
     sleep(1)
 
-    cursor.set_pos(4, 5)
+    cursor.set_pos(2, 2)
     text("██" * 22, letter_time=0, end="", mods=[color.WHITE])
-    for i in range(17):
-        cursor.set_pos(4, 6 + i)
+    for i in range(18):
+        cursor.set_pos(2, 3 + i)
         text("██" * 1, letter_time=0, end="", mods=[color.WHITE])
         text("  " * 20, letter_time=0, end="")
         text("██" * 1, letter_time=0, end="", mods=[color.WHITE])
-    cursor.set_pos(4, 7 + i)
+    cursor.set_pos(2, 4 + i)
     text("██" * 22, letter_time=0, end="", mods=[color.WHITE])
 
-    y = 7
+    y = 4
+    x = 6
 
-    cursor.set_pos(8, y)
+    cursor.set_pos(x, y)
     if state is False:
         died = "YOU LOST"
         cursor.cursor_right(18 - int(len(died) / 2))
@@ -850,8 +963,8 @@ def death_animation(grid: list, state: bool) -> None:
         cursor.cursor_right(18 - int(len(won) / 2))
         text(won, end="", mods=[color.BRIGHT_GREEN])
 
-    y += 2
-    cursor.set_pos(8, y)
+    y += 3
+    cursor.set_pos(x, y)
 
     high_scores = top_score.get_scores()
     high = False
@@ -864,14 +977,14 @@ def death_animation(grid: list, state: bool) -> None:
     text(f"Score: {score}", end="", mods=[color.GREEN])
 
     y += 1
-    cursor.set_pos(8, y)
+    cursor.set_pos(x, y)
     text(f"Lines Cleared: {lines}", end="", mods=[color.GREEN])
 
     y += 1
-    cursor.set_pos(8, y)
+    cursor.set_pos(x, y)
     text(f"Level Reached: {level}", end="", mods=[color.GREEN])
 
-    cursor.set_pos(8, y + 4)
+    cursor.set_pos(x, y + 4)
     text("High Scores:", end="", mods=[color.BRIGHT_YELLOW])
 
     num = -1
@@ -891,12 +1004,12 @@ def death_animation(grid: list, state: bool) -> None:
 
 
     for i, val in enumerate(mod_scores):
-        cursor.set_pos(8, y + 6 + i)
+        cursor.set_pos(x, y + 6 + i)
         text(f"{val[1]}: {val[2]}", end="", mods=[color.BRIGHT_BLUE])
 
 
     y += 2
-    cursor.set_pos(8, y)
+    cursor.set_pos(x, y)
     # text("Please Hit Enter...", end="", mods=[color.CYAN])
 
     thread = threading.Thread(target=keybd.simulate, args=("enter", .02))
@@ -911,22 +1024,23 @@ def death_animation(grid: list, state: bool) -> None:
     cursor.set_pos(0, 24)
     cursor.clear_screen_after()
 
-    cursor.set_pos(8, y)
+    cursor.set_pos(x, y)
 
     if high:
         text("Please enter your initials below:", mods=[color.CYAN])
-        cursor.set_pos(8, y + 4 + num)
+        cursor.set_pos(x, y + 4 + num)
         initials = input(color.BRIGHT_BLUE).upper()
 
         initials += "-" * max((3 - len(initials)), 0)
         initials = initials[:3]
+        initials = initials.replace(" ", "-")
 
         top_score.add_score(initials, score, high_scores)
 
-    cursor.set_pos(8, y)
+    cursor.set_pos(x, y)
     text(" " * 36, end="")
-    cursor.set_pos(8, y)
-    text("Hit enter to play again!", end="", mods=[color.CYAN])
+    cursor.set_pos(x, y)
+    text("Hit enter to play again or Ctrl+C to quit!", end="", mods=[color.CYAN])
 
     cursor.set_pos(0, 25)
     input()

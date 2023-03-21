@@ -1,10 +1,11 @@
-"""Class"""
+"""Tetromino Class"""
 
 # pylint: disable=consider-using-enumerate
 # pylint: disable=unused-wildcard-import
 # pylint: disable=wildcard-import
+# pylint: disable=pointless-statement
 
-from utilities import color
+import color
 from tetris_functions import *
 class Tetromino:
     """The tetrominoes falling, held, or in future."""
@@ -52,12 +53,12 @@ class Tetromino:
                 Returns True if the block moved at least one space.
                 Otherwise, returns False.
         """
-
+        distance = 0
         while not False:
 
             # Step 1. Check to see if you can move:
             if not self.check_dir(grid, direction):
-                return False
+                return distance, False
 
 
             if direction == "down":
@@ -96,9 +97,10 @@ class Tetromino:
                                 grid[i][j-1][1] = color.BLACK
                 self.update_position([self.pos_x + 1, self.pos_y])
 
+            distance += 1
             # Break if only moving once.
             if not infinite_move:
-                return True
+                return distance, True
 
 
     def check_dir(self, grid: list, direction: str = "down") -> bool:
@@ -232,10 +234,14 @@ class Tetromino:
 
             if fail is False:
                 succeed = True
+                if abs(x_offset) == 1 and abs(y_offset == 2):
+                    true_t = True
+                else:
+                    true_t = False
                 break
 
         if not succeed:
-            return False
+            return 0, False
 
         clear(grid)
         self.shape = rotated_piece
@@ -250,7 +256,74 @@ class Tetromino:
                 if self.shape[i - mod_y][j - mod_x] == "##":
                     grid[i][j] = ["##", self.color]
 
-        return True
+
+        # Detect T-Spin
+        spin = 0
+        front = 0
+        back = 0
+
+        if self.color == color.rgb_hex("80", "00", "80"):
+
+            for i in range(2):
+                for j in range(2):
+                    try:
+                        grid[self.pos_y + 2 * i]
+
+                        try:
+                            grid[0][self.pos_x]
+
+                            try:
+                                grid[0][self.pos_x + 2 * j]
+
+                                if grid[self.pos_y + 2 * i][self.pos_x + 2 * j][1] != color.BLACK:
+
+                                    if self.rotation == 0:
+                                        if i == 0:
+                                            front += 1
+                                        else:
+                                            back += 1
+
+                                    if self.rotation == 1:
+                                        if j == 1:
+                                            front += 1
+                                        else:
+                                            back += 1
+
+                                    if self.rotation == 2:
+                                        if i == 1:
+                                            front += 1
+                                        else:
+                                            back += 1
+
+                                    if self.rotation == 3:
+                                        if j == 0:
+                                            front += 1
+                                        else:
+                                            back += 1
+                            except IndexError:
+                                if (grid[self.pos_y + 2 * i][self.pos_x][1] != color.BLACK
+                                        and j == 0):
+                                    front += 1
+                                    back = 2
+                        except IndexError:
+                            if (grid[self.pos_y + 2 * i][self.pos_x + 2][1] != color.BLACK
+                                    and j == 1):
+                                front += 1
+                                back = 2
+                    except IndexError:
+                        if grid[self.pos_y][self.pos_x + 2 * j][1] != color.BLACK and i == 0:
+                            front += 1
+                            back = 2
+
+        total = front + back
+        if total >= 3:
+            spin += 1
+            if back == 1:
+                spin += 1
+            elif true_t:
+                spin += 1
+
+        return spin, True
 
 
     def change_status(self, position_items: list, status: int = 0) -> None:
