@@ -15,8 +15,8 @@ Things to do (not necessarily in order):
 	Ghost block -- Done
 	Controls settings -- Done
 	
-	Scores
-	Better controls (holding moves stuff)
+	Scores -- Done
+	Better controls (holding moves stuff) -- Done
 	Pausing
 	
 Bonus options ("if we have time" features):
