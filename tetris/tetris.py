@@ -1040,7 +1040,7 @@ def death_animation(grid: list, state: bool) -> None:
     cursor.set_pos(x, y)
     text(" " * 36, end="")
     cursor.set_pos(x, y)
-    text("Hit enter to play again or Ctrl+C to quit!", end="", mods=[color.CYAN])
+    text("Hit enter to play again!", end="", mods=[color.CYAN])
 
     cursor.set_pos(0, 25)
     input()

@@ -107,7 +107,7 @@ def is_long_pressed(key: str, function: callable or None = None,
         bool: True if the conditions are met. Otherwise, False.
     """
     success = False
-    if key in frames_since.keys():
+    if key in frames_since:
         frames_since[key] += 1
     else:
         frames_since[key] = 0
