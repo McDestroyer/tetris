@@ -107,7 +107,7 @@ def solidify(grid: list, relevant) -> None:
     for _ in enumerate(relevant):
         try:
             relevant.remove(None)
-        except Exception:
+        except ValueError:
             break
 
 

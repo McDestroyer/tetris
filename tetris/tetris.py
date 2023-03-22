@@ -453,6 +453,7 @@ def initialize():
 
 
 def add_seven():
+    """Randomize the order of the 7 tetrominos and add them to the queue."""
     global relevant_blocks
     # Remove the end
     held = relevant_blocks[-1]
@@ -742,15 +743,17 @@ def get_controls() -> dict:
 
     file = open(path, "r", encoding="UTF-8")
 
-    lines = file.readlines()[:]
+    file_lines = file.readlines()[:]
 
     control_map = {}
 
-    for line in lines:
+    for line in file_lines:
         control = line.split("=")
         if control[0].startswith("#"):
             return control_map
         control_map[control[0].strip()] = control[1].strip().lower()
+
+    file.close()
 
     return control_map
 
