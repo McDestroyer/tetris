@@ -248,6 +248,7 @@ def play():
         if distance > 0:
             tspin = 0
         solidify(current_positions, relevant_blocks)
+        sleep(0.1)
         relevant_blocks[0].move_to(current_positions, [3, 2])
         relevant_blocks[-2] = Tetromino(rand_choice(blocks), [2, 3])
         relevant_blocks[1].visualize(X_Y_OFFSET)
@@ -266,6 +267,7 @@ def play():
         if not relevant_blocks[0].was_held:
 
             clear(current_positions)
+            sleep(0.1)
 
             tspin = 0
 
@@ -293,6 +295,8 @@ def play():
         _, fell = relevant_blocks[0].move(current_positions, "down")
         if not fell:
             solidify(current_positions, relevant_blocks)
+
+            sleep(0.1)
 
             relevant_blocks[0].move_to(current_positions, [3, 2])
 
