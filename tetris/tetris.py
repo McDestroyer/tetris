@@ -168,6 +168,7 @@ old_positions = [
             ["██", color.BLACK] for _ in range(GRID[0])
         ] for _ in range(GRID[1])
     ]
+global relevant_blocks
 relevant_blocks = []
 
 
@@ -248,9 +249,10 @@ def play():
         if distance > 0:
             tspin = 0
         solidify(current_positions, relevant_blocks)
+        if len(relevant_blocks) < 6:
+            add_seven()
         sleep(0.1)
         relevant_blocks[0].move_to(current_positions, [3, 2])
-        relevant_blocks[-2] = Tetromino(rand_choice(blocks), [2, 3])
         relevant_blocks[1].visualize(X_Y_OFFSET)
         relevant_blocks[2].visualize(X_Y_OFFSET)
         relevant_blocks[3].visualize(X_Y_OFFSET)
@@ -295,6 +297,8 @@ def play():
         _, fell = relevant_blocks[0].move(current_positions, "down")
         if not fell:
             solidify(current_positions, relevant_blocks)
+            if len(relevant_blocks) < 6:
+                add_seven()
 
             sleep(0.1)
 
@@ -437,16 +441,36 @@ def initialize():
 
     generate_frame()
 
-    relevant_blocks.append(Tetromino(rand_choice(blocks), [5, 0], 0))
-    relevant_blocks.append(Tetromino(rand_choice(blocks), [5, 0], 1))
-    relevant_blocks.append(Tetromino(rand_choice(blocks), [5, 0], 2))
-    relevant_blocks.append(Tetromino(rand_choice(blocks), [5, 0], 3))
+
     relevant_blocks.append(Tetromino(blank, [5, 0], 3))
+    add_seven()
+
     relevant_blocks[0].move_to(current_positions, [3, 2])
     relevant_blocks[1].visualize(X_Y_OFFSET)
     relevant_blocks[2].visualize(X_Y_OFFSET)
     relevant_blocks[3].visualize(X_Y_OFFSET)
     update_screen_dynamically(current_positions, old_positions)
+
+
+def add_seven():
+    global relevant_blocks
+    # Remove the end
+    held = relevant_blocks[-1]
+    relevant_blocks = relevant_blocks[:-1]
+
+    # Generate and shuffle the seven
+    seven = []
+    for b in blocks:
+        seven.append(Tetromino(b, [5, 0], 0))
+
+    seven = shuffle(seven, 100)
+
+    for i, b in enumerate(seven):
+        b.status = len(relevant_blocks) + i
+
+    # Add them back
+    relevant_blocks += seven
+    relevant_blocks.append(held)
 
 
 def loading_screen():
@@ -669,12 +693,13 @@ def generate_frame():
          letter_time=0, flush=True, end="")
 
 
-def listener(ctrls: dict = get_controls()) -> list:
+def listener(ctrls: dict = None) -> list:
     """Find out which commands need to be run. Could be later modified to run these commands.
 
     Returns:
         list: The list of commands to be followed.
     """
+    ctrls = get_controls()
     commands = []
 
     # Designed so if opposing commands are included, they will cancel out.
@@ -703,6 +728,31 @@ def listener(ctrls: dict = get_controls()) -> list:
         commands.append("store")
 
     return commands
+
+
+def get_controls() -> dict:
+    """Get the controls and map them to the keys in the file.
+
+    Returns:
+        dict: The controls and their keys.
+    """
+    path = os.path.dirname(os.path.realpath(__file__))
+    path = os.path.join(path, "data")
+    path = os.path.join(path, "controls.txt")
+
+    file = open(path, "r", encoding="UTF-8")
+
+    lines = file.readlines()[:]
+
+    control_map = {}
+
+    for line in lines:
+        control = line.split("=")
+        if control[0].startswith("#"):
+            return control_map
+        control_map[control[0].strip()] = control[1].strip().lower()
+
+    return control_map
 
 
 def update_ghost(grid: list, block: Tetromino) -> None:

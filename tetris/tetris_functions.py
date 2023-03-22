@@ -101,7 +101,14 @@ def solidify(grid: list, relevant) -> None:
 
     for i in range(len(relevant) - 2):
         relevant[i] = relevant[i + 1]
+        relevant[i + 1] = None
         relevant[i].status = i
+
+    for _ in enumerate(relevant):
+        try:
+            relevant.remove(None)
+        except Exception:
+            break
 
 
 def clear(grid: list) -> None:
@@ -114,28 +121,3 @@ def clear(grid: list) -> None:
         for j, square in enumerate(row):
             if square[0] == "##":
                 grid[i][j] = ["██", color.BLACK]
-
-
-def get_controls() -> dict:
-    """Get the controls and map them to the keys in the file.
-
-    Returns:
-        dict: The controls and their keys.
-    """
-    path = os.path.dirname(os.path.realpath(__file__))
-    path = os.path.join(path, "data")
-    path = os.path.join(path, "controls.txt")
-
-    file = open(path, "r", encoding="UTF-8")
-
-    lines = file.readlines()[:]
-
-    control_map = {}
-
-    for line in lines:
-        control = line.split("=")
-        if control[0].startswith("#"):
-            return control_map
-        control_map[control[0].strip()] = control[1].strip().lower()
-
-    return control_map
