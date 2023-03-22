@@ -694,13 +694,12 @@ def generate_frame():
          letter_time=0, flush=True, end="")
 
 
-def listener(ctrls: dict = None) -> list:
+def listener(ctrls: dict = get_controls()) -> list:
     """Find out which commands need to be run. Could be later modified to run these commands.
 
     Returns:
         list: The list of commands to be followed.
     """
-    ctrls = get_controls()
     commands = []
 
     # Designed so if opposing commands are included, they will cancel out.
@@ -729,115 +728,6 @@ def listener(ctrls: dict = None) -> list:
         commands.append("store")
 
     return commands
-
-
-def get_controls() -> dict:
-    """Get the controls and map them to the keys in the file.
-
-    Returns:
-        dict: The controls and their keys.
-    """
-    path = os.path.dirname(os.path.realpath(__file__))
-    path = os.path.join(path, "data")
-    path = os.path.join(path, "controls.txt")
-
-    file = open(path, "r", encoding="UTF-8")
-
-    file_lines = file.readlines()[:]
-
-    control_map = {}
-
-    for line in file_lines:
-        control = line.split("=")
-        if control[0].startswith("#"):
-            return control_map
-        control_map[control[0].strip()] = control[1].strip().lower()
-
-    file.close()
-
-    return control_map
-
-
-def update_ghost(grid: list, block: Tetromino) -> None:
-    """Create a ghostly image of the falling block and update its position.
-
-    Args:
-        grid (list):
-            The current positions of everything.
-        block (Tetromino):
-            The block to make a ghost of.
-    """
-
-    # Clear the previous ghost.
-    for i, row in enumerate(grid):
-        for j, square in enumerate(row):
-            if square[0] == "[]":
-                grid[i][j] = ["██", color.BLACK]
-
-    # Feel out distances and find the shortest.
-    distance = 25
-    for i, row in enumerate(grid):
-        for j, square in enumerate(row):
-            if square[0] == "##":
-                distance = min(ghost_dist_find(grid, i, j), distance)
-
-    # Spawn a new piece of one wherever there's a falling block.
-    for i, row in enumerate(grid):
-        for j, square in enumerate(row):
-            if square[0] == "##":
-                ghost_fall(grid, i, j, block.color, distance)
-
-
-def ghost_dist_find(grid: list, start_y: int, x_pos: int) -> int:
-    """Find the distance the ghost piece can fall.
-
-    Args:
-        grid (list):
-            The current positions of everything.
-        start_y (int):
-            The height of the piece of block being checked.
-        x_pos (int):
-            The x-axis to check on.
-
-    Returns:
-        int: The distance the piece could fall.
-    """
-    dist = 0
-    if not start_y == len(grid) - 1:
-        for i in range(start_y, len(grid) - 1):
-            # If the blelow square is [] or neither black nor ## (A solid block),
-            # that's how far this one can go, so return it.
-            if (grid[i + 1][x_pos][0] == "[]" or
-                (grid[i + 1][x_pos][1] != color.BLACK and
-                grid[i + 1][x_pos][0] != "##")):
-                return dist
-            dist += 1
-    # If it doesn't find anything, put it on the floor.
-    return len(grid) - 1 - start_y
-
-
-def ghost_fall(grid: list, start_y: int, x_pos: int, ghost_color: str, dist: int):
-    """Make the ghost block fall until it lands on something.
-
-    Args:
-        grid (list):
-            The current positions of everything.
-        start_y (int):
-            The height of the piece of block being checked.
-        x_pos (int):
-            The x-axis to check on.
-        ghost_color (str):
-            The color of the block.
-        dist (int):
-            The distance down to move.
-
-    Returns:
-        int: The distance down moved.
-    """
-    if not start_y == len(grid) - 1:
-
-        if grid[start_y + dist][x_pos][0] != "##":
-            grid[start_y + dist][x_pos] = ["[]", ghost_color]
 
 
 def update_score():
@@ -901,40 +791,6 @@ def level_up():
         global g_loop
         g_time = (0.8 - ((level - 1) * 0.007)) ** (level - 1)
         g_loop = rounder(g_time * (1 / delta_seconds))
-
-
-def is_clear(grid: list) -> bool:
-    """Check to see if the screen has been fully cleared.
-
-    Args:
-        grid (list):
-            The current positions of everything.
-
-    Returns:
-        bool: True if the screen is empty. False otherwise.
-    """
-    for _, row in enumerate(grid):
-        for _, square in enumerate(row):
-            if square[0] == "██" and square[1] != color.BLACK:
-                return False
-    return True
-
-
-def check_death(grid: list) -> bool:
-    """Check to see if you are dead.
-
-    Args:
-        grid (list):
-            The current positions of everything.
-
-    Returns:
-        bool: Dead?
-    """
-    for i in range(4):
-        for j in range(10):
-            if grid[i][j][0] == "██" and grid[i][j][1] != color.BLACK:
-                return True
-    return False
 
 
 def update_screen_dynamically(current_pos: list, old_pos: list) -> None:
