@@ -424,7 +424,16 @@ def initialize():
 
     # Music
     file_location = os.path.dirname(os.path.realpath(__file__))
-    audio.play_background(file_location + "/assets/music/Tetris.mp3", -1)
+
+    music_files = ["Tetris", "russian"]
+
+    random_number = rand(100)
+    if random_number <= 4:
+        file = music_files[1]
+    else:
+        file = music_files[0]
+
+    audio.play_background(file_location + f"/assets/music/{file}.mp3", -1)
 
     generate_frame()
 
