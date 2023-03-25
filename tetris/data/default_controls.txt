@@ -1,9 +1,12 @@
-left = A
+left = a
 right = d
 hard_drop = w
 soft_drop = s
+rotate_left = left
 rotate_left = j
+rotate_right = right
 rotate_right = l
+store = up
 store = i
 pause = p
 #

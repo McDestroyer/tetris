@@ -17,6 +17,7 @@
 # creating and renaming the personal_functions.py and universal_colors.py for every program
 import sys
 import os
+import time
 
 try:
     from utilities import color
@@ -119,7 +120,7 @@ def get_controls() -> dict:
     """
     path = os.path.dirname(os.path.realpath(__file__))
     path = os.path.join(path, "data")
-    path = os.path.join(path, "controls.txt")
+    path = os.path.join(path, "default_controls.txt")
 
     file = open(path, "r", encoding="UTF-8")
 
@@ -128,10 +129,19 @@ def get_controls() -> dict:
     control_map = {}
 
     for line in file_lines:
-        control = line.split("=")
-        if control[0].startswith("#"):
+
+        if line.startswith("#"):
             return control_map
-        control_map[control[0].strip()] = control[1].strip().lower()
+
+        control = line.split("=")
+
+        button = control[1].strip().lower()
+        ctrl = control[0].strip().lower()
+
+        if not ctrl in control_map:
+            control_map[ctrl] = []
+
+        control_map[ctrl].append(button)
 
     file.close()
 
@@ -247,6 +257,29 @@ def is_clear(grid: list) -> bool:
             if square[0] == "██" and square[1] != color.BLACK:
                 return False
     return True
+
+
+def pause(keyboard_input, controls: dict):
+    """Pause the game and run a little pause animation until unpaused.
+
+    Args:
+        keyboard_input (module):
+            The keyboard_input module, obviously.
+        controls (dict):
+            The dictionary of controls and their keys.
+    """
+    cursor.set_pos()
+    print("Paused...")
+    pause_time = time.monotonic()
+    prev_dots = 3
+    while not keyboard_input.is_newly_pressed(controls["pause"]):
+        dots = int((time.monotonic() - pause_time) % 4)
+        if dots != prev_dots:
+            cursor.set_pos()
+            print("Paused" + "." * dots + " " * (3 - dots))
+            prev_dots = dots
+    cursor.set_pos()
+    print("         ")
 
 
 def check_death(grid: list) -> bool:

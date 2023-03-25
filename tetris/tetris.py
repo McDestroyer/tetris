@@ -694,7 +694,9 @@ def generate_frame():
          letter_time=0, flush=True, end="")
 
 
-def listener(ctrls: dict = get_controls()) -> list:
+controls = get_controls()
+
+def listener() -> list:
     """Find out which commands need to be run. Could be later modified to run these commands.
 
     Returns:
@@ -702,44 +704,36 @@ def listener(ctrls: dict = get_controls()) -> list:
     """
     commands = []
 
-    # Designed so if opposing commands are included, they will cancel out.
-    if keyboard_input.is_long_pressed(ctrls["left"], speed = 3):
-        commands.append("left")
-    if keyboard_input.is_long_pressed(ctrls["right"], speed = 3):
-        if "left" not in commands:
-            commands.append("right")
-        else:
-            commands.remove("left")
+    new = ["rotate_left", "rotate_right", "hard_drop", "store", "pause"]
+    long = ["right", "left"]
+    hold = ["soft_drop"]
+    long_frames = 3
 
-    if keyboard_input.is_currently_pressed(ctrls["soft_drop"]):
-        commands.append("soft_drop")
-    if keyboard_input.is_newly_pressed(ctrls["hard_drop"]):
-        commands.append("hard_drop")
 
-    if keyboard_input.is_newly_pressed(ctrls["rotate_left"]):
-        commands.append("rotate_left")
-    if keyboard_input.is_newly_pressed(ctrls["rotate_right"]):
-        if "rotate left" not in commands:
-            commands.append("rotate_right")
-        else:
-            commands.remove("rotate_left")
+    keys = controls.keys()
 
-    if keyboard_input.is_newly_pressed(ctrls["store"]):
-        commands.append("store")
+    for ctrl in keys:
 
-    if keyboard_input.is_newly_pressed(ctrls["pause"]):
-        cursor.set_pos()
-        print("Paused...")
-        pause_time = time.monotonic()
-        prev_dots = 3
-        while not keyboard_input.is_newly_pressed(ctrls["pause"]):
-            dots = int((time.monotonic() - pause_time) % 4)
-            if dots != prev_dots:
-                cursor.set_pos()
-                print("Paused" + "." * dots + " " * (3 - dots))
-                prev_dots = dots
-        cursor.set_pos()
-        print("         ")
+        if ctrl in new:
+            if keyboard_input.is_newly_pressed(controls[ctrl]):
+                commands.append(ctrl)
+        elif ctrl in long:
+            if keyboard_input.is_long_pressed(controls[ctrl], speed = long_frames):
+                commands.append(ctrl)
+        elif ctrl in hold:
+            if keyboard_input.is_currently_pressed(controls[ctrl]):
+                commands.append(ctrl)
+
+    if "left" in commands and "right" in commands:
+        commands.remove("left")
+        commands.remove("right")
+
+    if "rotate_left" in commands and "rotate_right" in commands:
+        commands.remove("rotate_left")
+        commands.remove("rotate_right")
+
+    if "pause" in commands:
+        pause(keyboard_input, controls)
 
     return commands
 
