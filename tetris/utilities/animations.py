@@ -191,7 +191,6 @@ def drop_down(image: list, colors: dict, drop_time: int = 5,
 
     for i in range(bottom_y):
         cursor.set_pos(0, 0)
-        cursor.clear_screen()
 
         if keybd.is_currently_pressed("esc"):
             cursor.cursor_down()
@@ -201,14 +200,19 @@ def drop_down(image: list, colors: dict, drop_time: int = 5,
         for j in range(i, 0, -1):
 
             if j <= len(image):
-                cursor.clear_line()
                 line = image[-j]
 
-                for piece in line:
-
+                for k, piece in enumerate(line):
                     if piece == " ":
                         text(piece, end="", letter_time=0, flush=False)
                     else:
+                        try:
+                            if image[-j + 1][k] == piece and i < j:
+                                cursor.cursor_right()
+                                continue
+                        except IndexError:
+                            pass
+
                         if symbol is None:
                             text(piece, mods=[colors[piece]], end="", letter_time=0, flush=False)
                         else:

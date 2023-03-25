@@ -482,9 +482,9 @@ def loading_screen():
 
     logo = [
         "##########  --------  __________  ======    ......  //////  ",
-        "    ##      --            __      ==    ==    ..    //        ",
+        "    ##      --            __      ==    ==    ..    //      ",
         "    ##      ----          __      ======      ..    //////  ",
-        "    ##      --            __      ==  ==      ..        //",
+        "    ##      --            __      ==  ==      ..        //  ",
         "    ##      --------      __      ==    ==  ......  //////  "
     ]
 
@@ -726,6 +726,20 @@ def listener(ctrls: dict = get_controls()) -> list:
 
     if keyboard_input.is_newly_pressed(ctrls["store"]):
         commands.append("store")
+
+    if keyboard_input.is_newly_pressed(ctrls["pause"]):
+        cursor.set_pos()
+        print("Paused...")
+        pause_time = time.monotonic()
+        prev_dots = 3
+        while not keyboard_input.is_newly_pressed(ctrls["pause"]):
+            dots = int((time.monotonic() - pause_time) % 4)
+            if dots != prev_dots:
+                cursor.set_pos()
+                print("Paused" + "." * dots + " " * (3 - dots))
+                prev_dots = dots
+        cursor.set_pos()
+        print("         ")
 
     return commands
 

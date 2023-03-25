@@ -5,6 +5,7 @@ soft_drop = s
 rotate_left = j
 rotate_right = l
 store = i
+pause = p
 #
 Instructions:
 
