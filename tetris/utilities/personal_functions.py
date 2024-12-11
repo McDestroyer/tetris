@@ -68,7 +68,7 @@ def text(*message: object, letter_time: float = .025, line_delay: float = 0,
 
     # Due to anything in the message slot being turned into a tuple, this checks to see if the 1st
     # item is a tuple as that usually indicates that it was passed on from intext() or one of the
-    # 'put() functions. It also serves to allow for easy listing of items in a list.
+    # -put() functions. It also serves to allow for easy listing of items in a list.
     # Does not run if there's more than one arguement, so adding a "" and setting sep to "" would
     # override this.
     if len(message) == 1:
