@@ -973,13 +973,14 @@ def death_animation(grid: list, state: bool) -> None:
     text("Hit enter to play again!", end="", mods=[color.CYAN])
 
     cursor.set_pos(0, 25)
-    input()
+    if input() == "no":
+        return
 
+    # Reboots the program
     python = sys.executable
 
-    args = [python, "tetris.py", "false"]
+    args = [python, "tetris\\tetris.py", "false"]
 
-    # os.execl(python, python, *arg)
     subprocess.call(args)
 
 
